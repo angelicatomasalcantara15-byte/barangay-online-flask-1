@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== MATCHING DASHBOARD CSS ===== */
         :root {
             --primary-800: #0f3d2a;
             --primary-700: #145233;
@@ -16,21 +15,16 @@
             --primary-50: #e8f5ed;
             --accent-600: #dc3545;
             --neutral-50: #f4f8f5;
-            --neutral-100: #e2e8f0;
+            --neutral-100: #dde8e1;
             --neutral-200: #cbd5e1;
-            --neutral-500: #64748b;
+            --neutral-500: #6b8475;
             --neutral-700: #334155;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral-50); min-height: 100vh; }
 
-        /* ===== SIDEBAR (GREEN) ===== */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px; height: 100vh; background: linear-gradient(180deg, var(--primary-800), var(--primary-600));
             position: fixed; left: 0; top: 0;
@@ -64,49 +58,107 @@
         /* ===== MAIN CONTENT ===== */
         .main-content { margin-left: 260px; padding: 30px 40px; min-height: 100vh; }
 
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: var(--primary-800); }
-        .page-header h1 small { font-size: 0.85rem; font-weight: 400; color: var(--neutral-500); display: block; margin-top: 4px; }
-        .page-header .user-badge { display: flex; align-items: center; gap: 12px; background: white; padding: 8px 16px 8px 20px; border-radius: 60px; box-shadow: var(--shadow-sm); }
-        .page-header .user-badge i { font-size: 1.2rem; color: var(--primary-500); }
-        .page-header .user-badge span { font-weight: 600; color: var(--primary-800); }
-
-        /* ===== BANNER ===== */
-        .banner {
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-        }
-        .banner i { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
-        .banner-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-        .banner-content p { font-size: 14px; line-height: 1.6; }
-
-        .banner-warning {
-            background: linear-gradient(135deg, #fffbeb, #fef3c7);
-            border: 1px solid #fcd34d;
-        }
-        .banner-warning i { color: #d97706; }
-        .banner-warning h4 { color: #92400e; }
-        .banner-warning p { color: #78350f; }
-
-        /* ===== FORM CARD (FULL WIDTH NA!) ===== */
-        .form-card {
+        /* ===== PAGE HEADER CARD ===== */
+        .page-header-card {
             background: white;
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            width: 100%;
-            box-shadow: var(--shadow-sm);
+            border-radius: 16px;
+            padding: 24px 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             border: 1px solid var(--neutral-100);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header-card h1 { font-size: 1.6rem; font-weight: 700; color: var(--primary-800); display: flex; align-items: center; gap: 10px; }
+        .page-header-card h1 i { color: var(--primary-500); }
+        .page-header-card h1 small { font-size: 0.85rem; font-weight: 400; color: var(--neutral-500); display: block; margin-top: 4px; }
+
+        /* ===== USER BADGE + DROPDOWN ===== */
+        .user-badge-container { display: flex; align-items: center; gap: 10px; position: relative; }
+        .user-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--neutral-50); padding: 6px 14px 6px 6px;
+            border-radius: 60px; border: 1px solid var(--neutral-100);
+            cursor: pointer; transition: all 0.2s ease; user-select: none;
+        }
+        .user-badge:hover { border-color: var(--primary-500); background: white; }
+        .user-badge .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, #1a6b42, #0f3d2a);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 0.95rem; flex-shrink: 0;
+        }
+        .user-badge .user-info { line-height: 1.2; }
+        .user-badge .user-info .name { font-weight: 700; color: var(--primary-800); font-size: 0.85rem; }
+        .user-badge .user-info .role { font-size: 0.7rem; color: var(--neutral-500); margin-top: 1px; }
+        .user-badge .chevron { font-size: 0.65rem; color: var(--neutral-500); margin-left: 2px; }
+
+        /* ===== USER DROPDOWN MENU ===== */
+        .user-menu {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            background: white; border: 1px solid var(--neutral-100);
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 8px; min-width: 240px; z-index: 200;
+        }
+        .user-menu.show { display: block; }
+        .user-menu-header {
+            padding: 12px 14px; border-bottom: 1px solid var(--neutral-100); margin-bottom: 6px;
+        }
+        .user-menu-header .name { font-weight: 700; color: var(--primary-800); font-size: 0.9rem; }
+        .user-menu-header .email { font-size: 0.75rem; color: var(--neutral-500); margin-top: 2px; word-break: break-all; }
+        .user-menu-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; border-radius: 8px; text-decoration: none;
+            color: var(--primary-800); font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .user-menu-item:hover { background: var(--neutral-50); }
+        .user-menu-item i { font-size: 0.9rem; width: 18px; text-align: center; }
+        .user-menu-item.logout-item { color: #c42828; }
+        .user-menu-item.logout-item:hover { background: #fee; }
+        .user-menu-item.logout-item i { color: #c42828; }
+
+        /* ===== LANGUAGE SWITCHER ===== */
+        .lang-switcher-btn {
+            background: var(--neutral-50); border: 1px solid var(--neutral-100);
+            padding: 6px 12px; border-radius: 20px; cursor: pointer;
+            font-size: 0.75rem; font-weight: 600; color: var(--primary-600);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .lang-switcher-btn:hover { background: #e8f5ed; }
+        .lang-menu {
+            display: none; position: absolute; top: 100%; right: 0;
+            background: white; border: 1px solid var(--neutral-100);
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: 6px; margin-top: 6px; min-width: 140px; z-index: 100;
+        }
+        .lang-menu.show { display: block; }
+        .lang-menu a {
+            display: block; padding: 8px 14px; border-radius: 8px;
+            text-decoration: none; color: var(--primary-800);
+            font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+        .lang-menu a:hover { background: var(--neutral-50); }
+
+        /* ===== GENERAL CARD ===== */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--neutral-100);
+            margin-bottom: 24px;
         }
 
+        /* ===== FORM HEADER ===== */
         .form-header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid var(--primary-50);
+            border-bottom: 1px solid var(--neutral-100);
         }
         .form-header .logo-icon {
             width: 60px; height: 60px; border-radius: 50%;
@@ -114,20 +166,22 @@
             display: flex; align-items: center; justify-content: center;
             color: white; font-size: 24px; margin: 0 auto 12px;
         }
-        .form-header h2 { color: var(--primary-800); font-weight: 800; font-size: 1.8rem; }
+        .form-header h2 { color: var(--primary-800); font-weight: 800; font-size: 1.6rem; }
         .form-header p { color: var(--neutral-500); font-size: 0.9rem; margin-top: 4px; }
 
         /* ===== FORM SECTION TITLES ===== */
         .form-section-title {
             background: var(--primary-50);
             padding: 12px 16px;
-            border-radius: var(--radius-sm);
+            border-radius: 8px;
             margin-bottom: 20px;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
             font-weight: 700;
             color: var(--primary-800);
+            font-size: 0.9rem;
         }
         .form-section-title i { color: var(--primary-500); }
 
@@ -140,7 +194,7 @@
             display: block;
             font-weight: 600;
             color: var(--primary-800);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             margin-bottom: 6px;
@@ -155,10 +209,10 @@
             width: 100%;
             padding: 12px 16px;
             border: 1.5px solid var(--neutral-100);
-            border-radius: var(--radius-sm);
-            font-size: 0.95rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-family: inherit;
-            background: #fafcff;
+            background: var(--neutral-50);
             transition: all 0.3s ease;
         }
         .form-group input:focus,
@@ -179,12 +233,12 @@
         /* File Upload */
         .file-upload-area {
             border: 2px dashed var(--neutral-200);
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #fafcff;
+            background: var(--neutral-50);
             position: relative;
         }
         .file-upload-area:hover { border-color: var(--primary-500); background: var(--primary-50); }
@@ -202,7 +256,7 @@
         .consent-section {
             margin: 30px 0 20px;
             background: var(--neutral-50);
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             border: 1.5px solid var(--neutral-100);
             overflow: hidden;
         }
@@ -211,13 +265,14 @@
             padding: 14px 18px;
             background: var(--primary-50);
             font-weight: 700; color: var(--primary-800);
+            font-size: 0.9rem;
         }
         .consent-section .consent-title i { color: var(--primary-500); }
         .consent-body { padding: 16px 18px; }
         .consent-checkbox { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
         .consent-checkbox:last-child { margin-bottom: 0; }
         .consent-checkbox input[type="checkbox"] { width: 18px; height: 18px; min-width: 18px; margin-top: 2px; accent-color: var(--primary-500); cursor: pointer; }
-        .consent-checkbox label { font-size: 0.85rem; color: var(--neutral-500); line-height: 1.6; cursor: pointer; }
+        .consent-checkbox label { font-size: 0.85rem; color: var(--neutral-500); line-height: 1.6; cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 400; }
         .consent-checkbox label strong { color: var(--primary-800); }
 
         /* ===== BUTTONS ===== */
@@ -229,7 +284,7 @@
             border: none;
             border-radius: 50px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: inline-flex;
@@ -246,7 +301,7 @@
             border: none;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
@@ -256,37 +311,46 @@
         }
         .btn-cancel:hover { background: #cbd5e1; }
 
+        /* ===== BANNER ===== */
+        .banner {
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            border: 1px solid #fcd34d;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+        .banner i { font-size: 24px; flex-shrink: 0; margin-top: 2px; color: #d97706; }
+        .banner-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: #92400e; }
+        .banner-content p { font-size: 13px; line-height: 1.6; color: #78350f; }
+
         /* ===== FLASH MESSAGES ===== */
         .flash-message {
             padding: 12px 18px;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             margin-bottom: 16px;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 0.85rem;
         }
         .flash-message.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .flash-message.danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
         .flash-message.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .flash-message.info { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
 
-        /* ===== AREA REPRESENTATIVE SECTION - NAKATAGO BY DEFAULT ===== */
-        #areaRepSection {
-            display: none;
-        }
-        #areaRepSection.visible {
-            display: block;
-        }
+        /* ===== AREA REPRESENTATIVE SECTION ===== */
+        #areaRepSection { display: none; }
+        #areaRepSection.visible { display: block; }
 
         /* ===== SUCCESS MODAL ===== */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
             z-index: 1000;
@@ -294,13 +358,11 @@
             align-items: center;
             animation: fadeIn 0.3s ease;
         }
-        .modal-overlay.active {
-            display: flex !important;
-        }
+        .modal-overlay.active { display: flex !important; }
 
         .modal-box {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: 16px;
             max-width: 520px;
             width: 90%;
             padding: 0;
@@ -317,79 +379,50 @@
             position: relative;
         }
         .modal-header-success .icon-circle {
-            width: 72px;
-            height: 72px;
+            width: 72px; height: 72px;
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin: 0 auto 12px;
             font-size: 32px;
         }
-        .modal-header-success h2 {
-            font-size: 24px;
-            font-weight: 800;
-        }
-        .modal-header-success p {
-            opacity: 0.9;
-            font-size: 14px;
-            margin-top: 4px;
-        }
+        .modal-header-success h2 { font-size: 24px; font-weight: 800; }
+        .modal-header-success p { opacity: 0.9; font-size: 14px; margin-top: 4px; }
         .modal-close-btn {
-            position: absolute;
-            top: 12px;
-            right: 16px;
+            position: absolute; top: 12px; right: 16px;
             background: rgba(255,255,255,0.15);
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: none; color: white;
+            width: 32px; height: 32px;
+            border-radius: 50%; font-size: 18px;
+            cursor: pointer; transition: background 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .modal-close-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        .modal-close-btn:hover { background: rgba(255,255,255,0.3); }
 
-        .modal-body {
-            padding: 24px 30px 20px;
-        }
+        .modal-body { padding: 24px 30px 20px; }
 
         .reference-box {
             background: linear-gradient(135deg, #e3f5e8, #d0ebdd);
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 14px 20px;
             text-align: center;
             margin-bottom: 16px;
         }
         .reference-box .ref-label {
-            font-size: 11px;
-            color: var(--primary-600);
-            font-weight: 600;
-            text-transform: uppercase;
+            font-size: 11px; color: var(--primary-600);
+            font-weight: 600; text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .reference-box .ref-number {
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 22px; font-weight: 800;
             color: var(--primary-700);
-            letter-spacing: 1px;
-            margin: 2px 0;
+            letter-spacing: 1px; margin: 2px 0;
         }
         .reference-box .ref-badge {
             display: inline-block;
-            background: #fef3c7;
-            color: #92400e;
-            padding: 2px 14px;
-            border-radius: 40px;
-            font-size: 12px;
-            font-weight: 600;
+            background: #fef3c7; color: #92400e;
+            padding: 2px 14px; border-radius: 40px;
+            font-size: 12px; font-weight: 600;
         }
 
         .doc-details-grid {
@@ -397,130 +430,70 @@
             grid-template-columns: 1fr 1fr;
             gap: 4px 16px;
             background: var(--neutral-50);
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 12px 16px;
             border: 1px solid var(--neutral-100);
             margin-bottom: 14px;
         }
         .doc-details-grid .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 3px 0;
-            font-size: 13px;
+            display: flex; align-items: center; gap: 6px;
+            padding: 3px 0; font-size: 13px;
             color: var(--primary-800);
             border-bottom: 1px solid rgba(0,0,0,0.04);
         }
         .doc-details-grid .detail-item:last-child,
-        .doc-details-grid .detail-item:nth-last-child(2) {
-            border-bottom: none;
-        }
-        .doc-details-grid .detail-item i {
-            color: var(--primary-500);
-            width: 16px;
-            font-size: 13px;
-        }
-        .doc-details-grid .detail-item .label {
-            font-weight: 600;
-            color: var(--neutral-500);
-            font-size: 11px;
-            min-width: 60px;
-        }
-        .doc-details-grid .detail-item .value {
-            font-weight: 500;
-            color: var(--primary-800);
-        }
+        .doc-details-grid .detail-item:nth-last-child(2) { border-bottom: none; }
+        .doc-details-grid .detail-item i { color: var(--primary-500); width: 16px; font-size: 13px; }
+        .doc-details-grid .detail-item .label { font-weight: 600; color: var(--neutral-500); font-size: 11px; min-width: 60px; }
+        .doc-details-grid .detail-item .value { font-weight: 500; color: var(--primary-800); }
 
         .status-badge {
             display: inline-block;
-            background: #fef3c7;
-            color: #92400e;
-            padding: 3px 14px;
-            border-radius: 40px;
-            font-size: 12px;
-            font-weight: 600;
+            background: #fef3c7; color: #92400e;
+            padding: 3px 14px; border-radius: 40px;
+            font-size: 12px; font-weight: 600;
         }
 
         .waiting-banner-modal {
             background: linear-gradient(135deg, #eff6ff, #dbeafe);
             border: 1px solid #93c5fd;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             margin-bottom: 4px;
         }
-        .waiting-banner-modal i {
-            font-size: 22px;
-            color: #2563eb;
-        }
-        .waiting-banner-modal .waiting-text h4 {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1e40af;
-            margin-bottom: 1px;
-        }
-        .waiting-banner-modal .waiting-text p {
-            font-size: 13px;
-            color: #1e3a8a;
-        }
+        .waiting-banner-modal i { font-size: 22px; color: #2563eb; }
+        .waiting-banner-modal .waiting-text h4 { font-size: 14px; font-weight: 700; color: #1e40af; margin-bottom: 1px; }
+        .waiting-banner-modal .waiting-text p { font-size: 13px; color: #1e3a8a; }
 
         .modal-footer-actions {
-            display: flex;
-            gap: 12px;
+            display: flex; gap: 12px;
             padding: 16px 30px 24px;
             flex-wrap: wrap;
         }
         .modal-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-width: 120px;
+            flex: 1; padding: 12px 20px;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer; text-align: center;
+            text-decoration: none; transition: all 0.3s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; min-width: 120px;
         }
-        .modal-btn.primary {
-            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-            color: white;
-        }
-        .modal-btn.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26,107,66,0.3);
-        }
-        .modal-btn.secondary {
-            background: var(--neutral-100);
-            color: var(--neutral-700);
-            border: 1px solid var(--neutral-100);
-        }
-        .modal-btn.secondary:hover {
-            background: #cbd5e1;
-        }
+        .modal-btn.primary { background: linear-gradient(135deg, var(--primary-600), var(--primary-700)); color: white; }
+        .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,107,66,0.3); }
+        .modal-btn.secondary { background: var(--neutral-100); color: var(--neutral-700); border: 1px solid var(--neutral-100); }
+        .modal-btn.secondary:hover { background: #cbd5e1; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* Responsive */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); width: 280px; }
             .sidebar.open { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; }
-            .form-card { padding: 20px; }
+            .card { padding: 20px; }
             .form-row { flex-direction: column; gap: 0; }
             .form-col { min-width: 100%; }
             .form-actions { flex-direction: column; }
@@ -530,12 +503,30 @@
             .modal-footer-actions { flex-direction: column; }
             .modal-btn { width: 100%; }
             .modal-box { width: 95%; margin: 20px; }
+            .page-header-card { flex-direction: column; align-items: flex-start; }
+            .page-header-card h1 { font-size: 1.3rem; }
+            .user-menu { right: -10px; }
         }
+        /* ===== BADGE NOTIFICATION ===== */
+.badge-notification {
+    background: #dc3545;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
     </style>
 </head>
 <body>
 
-    <!-- ===== SIDEBAR ===== -->
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="logo-img">SN</div>
@@ -545,36 +536,73 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="{{ url_for('request_document') }}" class="active"><i class="fas fa-file-alt"></i> Request Document</a>
-            <a href="{{ url_for('apply_permit') }}"><i class="fas fa-calendar-check"></i> Apply for Permit</a>
-            <a href="{{ url_for('my_requests') }}"><i class="fas fa-list"></i> My Requests</a>
-            <a href="{{ url_for('events') }}"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> My Profile</a>
-            <a href="{{ url_for('logout') }}" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> <span class="translatable">Dashboard</span></a>
+            <a href="{{ url_for('request_document') }}" class="active"><i class="fas fa-file-alt"></i> <span class="translatable">Request Document</span></a>
+            <a href="{{ url_for('apply_permit') }}"><i class="fas fa-calendar-check"></i> <span class="translatable">Apply for Permit</span></a>
+            <a href="{{ url_for('my_requests') }}"><i class="fas fa-list"></i> <span class="translatable">My Requests</span></a>
+            <a href="{{ url_for('events') }}"><i class="fas fa-calendar-alt"></i> <span class="translatable">Events Calendar</span></a>
+            <a href="{{ url_for('user_announcements') }}"><i class="fas fa-bullhorn"></i> <span class="translatable">Announcements</span></a>
         </nav>
     </aside>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
-        <!-- Page Header -->
-        <div class="page-header">
+        <!-- PAGE HEADER CARD -->
+        <div class="page-header-card">
             <div>
                 <h1>
-                    <i class="fas fa-file-alt" style="color: var(--primary-500); margin-right: 10px;"></i>
-                    Request Document
-                    <small>Submit a request for barangay documents</small>
+                    <i class="fas fa-file-alt"></i>
+                    <span class="translatable">Request Document</span>
+                    <small class="translatable">Submit a request for barangay documents</small>
                 </h1>
             </div>
-            <div class="user-badge">
-                <i class="fas fa-user-circle"></i>
-                <span>{{ session.fullname or 'Resident' }}</span>
+            
+            <!-- LANGUAGE SWITCHER + USER BADGE + DROPDOWN -->
+            <div class="user-badge-container">
+                
+                <!-- LANGUAGE SWITCHER -->
+                <div class="lang-switcher" style="position: relative;">
+                    <button onclick="toggleLangMenu(event)" class="lang-switcher-btn">
+                        <i class="fas fa-globe"></i> 
+                        <span id="currentLangText">English</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.6rem;"></i>
+                    </button>
+                    <div id="langMenu" class="lang-menu">
+                        <a onclick="setLanguage('en')">🇺🇸 English</a>
+                        <a onclick="setLanguage('tl')">🇵🇭 Tagalog</a>
+                    </div>
+                </div>
+
+                <!-- USER BADGE -->
+                <div class="user-badge" onclick="toggleUserMenu(event)">
+                    <div class="avatar">{{ (session.fullname or 'R')[0]|upper }}</div>
+                    <div class="user-info">
+                        <div class="name">{{ session.fullname or 'Resident' }}</div>
+                        <div class="role">{{ session.role|replace('_', ' ')|title }}</div>
+                    </div>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+
+                <!-- USER DROPDOWN MENU -->
+                <div id="userMenu" class="user-menu">
+                    <div class="user-menu-header">
+                        <div class="name">{{ session.fullname or 'Resident' }}</div>
+                        <div class="email">{{ session.email or 'resident@email.com' }}</div>
+                    </div>
+                    <a href="{{ url_for('settings') }}" class="user-menu-item">
+                        <i class="fas fa-cog"></i> <span class="translatable">Settings</span>
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="user-menu-item logout-item">
+                        <i class="fas fa-sign-out-alt"></i> <span class="translatable">Logout</span>
+                    </a>
+                </div>
+
             </div>
         </div>
 
-        <!-- ===== WARNING BANNER ===== -->
-        <div class="banner banner-warning">
+        <!-- WARNING BANNER -->
+        <div class="banner">
             <i class="fas fa-clock"></i>
             <div class="banner-content">
                 <h4>⚠️ Important: Please Complete All Required Fields</h4>
@@ -582,7 +610,7 @@
             </div>
         </div>
 
-        <!-- Flash Messages -->
+        <!-- FLASH MESSAGES -->
         <div id="flashMessages">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -596,15 +624,16 @@
             {% endwith %}
         </div>
 
-        <!-- ===== FORM CARD (FULL WIDTH) ===== -->
-        <div class="form-card">
+        <!-- FORM CARD -->
+        <div class="card">
             <div class="form-header">
                 <div class="logo-icon"><i class="fas fa-file-alt"></i></div>
-                <h2>Document Request Form</h2>
+                <h2 class="translatable">Document Request Form</h2>
                 <p>Barangay Sto. Niño Online Services</p>
             </div>
 
-            <form id="clearanceForm" action="/submit-document-request" method="POST" enctype="multipart/form-data">           <!-- DOCUMENT TYPE -->
+            <form id="clearanceForm" action="/submit-document-request" method="POST" enctype="multipart/form-data">
+                <!-- DOCUMENT TYPE -->
                 <div class="form-section-title"><i class="fas fa-file-alt"></i> Document Type</div>
                 <div class="form-row">
                     <div class="form-col">
@@ -637,8 +666,8 @@
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="middleName">Middle Name <span class="optional">(leave blank if no middle name)</span></label>
-                            <input type="text" name="middle_name" id="middleName" placeholder="Middle Name (Optional)">
+                            <label for="middleName">Middle Name <span class="optional">(optional)</span></label>
+                            <input type="text" name="middle_name" id="middleName" placeholder="Middle Name">
                         </div>
                     </div>
                 </div>
@@ -731,7 +760,7 @@
                     </div>
                 </div>
 
-                <!-- ===== AREA REPRESENTATIVE SIGNATURE - NAKATAGO BY DEFAULT ===== -->
+                <!-- AREA REPRESENTATIVE -->
                 <div id="areaRepSection">
                     <div class="form-section-title"><i class="fas fa-pen-fancy"></i> Area Representative Signature</div>
                     <div class="form-row">
@@ -785,7 +814,7 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="spouseName">Name of Spouse <span class="optional">(leave blank if not applicable)</span></label>
+                            <label for="spouseName">Name of Spouse <span class="optional">(optional)</span></label>
                             <input type="text" name="spouse_name" id="spouseName" placeholder="Spouse's Name">
                         </div>
                     </div>
@@ -901,7 +930,7 @@
 
     </main>
 
-    <!-- ===== SUCCESS MODAL ===== -->
+    <!-- SUCCESS MODAL -->
     <div class="modal-overlay" id="successModal">
         <div class="modal-box">
             <div class="modal-header-success">
@@ -913,14 +942,12 @@
                 <p>Your document request has been received</p>
             </div>
             <div class="modal-body">
-                <!-- Reference Number -->
                 <div class="reference-box">
                     <div class="ref-label"><i class="fas fa-qrcode"></i> Reference Number</div>
                     <div class="ref-number" id="modalRefNumber">DOC-20260905-XXXX</div>
                     <span class="ref-badge" id="modalQueueBadge">Queue #001</span>
                 </div>
 
-                <!-- Document Details -->
                 <div class="doc-details-grid" id="modalDetailsGrid">
                     <div class="detail-item">
                         <i class="fas fa-file-alt"></i>
@@ -944,7 +971,6 @@
                     </div>
                 </div>
 
-                <!-- Waiting Banner -->
                 <div class="waiting-banner-modal">
                     <i class="fas fa-hourglass-half"></i>
                     <div class="waiting-text">
@@ -967,11 +993,10 @@
         </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
     <script>
         // ===== MOBILE SIDEBAR TOGGLE =====
         document.addEventListener('DOMContentLoaded', function() {
-            const header = document.querySelector('.page-header');
+            const header = document.querySelector('.page-header-card');
             const hamburger = document.createElement('button');
             hamburger.innerHTML = '<i class="fas fa-bars"></i>';
             hamburger.style.cssText = 'background: none; border: none; font-size: 1.5rem; color: var(--primary-800); cursor: pointer; display: none; padding: 4px 8px;';
@@ -993,9 +1018,97 @@
                 }
             });
 
-            // Set default date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('signatureDate').value = today;
+        });
+
+        // ===== USER MENU DROPDOWN =====
+        function toggleUserMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('userMenu');
+            const langMenu = document.getElementById('langMenu');
+            if (langMenu) langMenu.classList.remove('show');
+            menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenu');
+            const userBadge = document.querySelector('.user-badge');
+            if (userMenu && userBadge && !userBadge.contains(e.target) && !userMenu.contains(e.target)) {
+                userMenu.classList.remove('show');
+            }
+        });
+
+        // ===== LANGUAGE SWITCHER =====
+        function toggleLangMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('langMenu');
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) userMenu.classList.remove('show');
+            menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('langMenu');
+            const switcher = document.querySelector('.lang-switcher');
+            if (menu && switcher && !switcher.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // ===== TRANSLATIONS =====
+        const translations = {
+            'en': {
+                'Dashboard': 'Dashboard',
+                'Request Document': 'Request Document',
+                'Apply for Permit': 'Apply for Permit',
+                'My Requests': 'My Requests',
+                'Events Calendar': 'Events Calendar',
+                'Settings': 'Settings',
+                'Logout': 'Logout',
+                'Submit a request for barangay documents': 'Submit a request for barangay documents',
+                'Document Request Form': 'Document Request Form'
+            },
+            'tl': {
+                'Dashboard': 'Dashboard',
+                'Request Document': 'Mag-request ng Dokumento',
+                'Apply for Permit': 'Mag-apply ng Permit',
+                'My Requests': 'Aking mga Request',
+                'Events Calendar': 'Kalendaryo ng mga Kaganapan',
+                'Settings': 'Settings',
+                'Logout': 'Mag-logout',
+                'Submit a request for barangay documents': 'Mag-sumite ng request para sa mga dokumento ng barangay',
+                'Document Request Form': 'Form ng Document Request'
+            }
+        };
+
+        function setLanguage(lang) {
+            localStorage.setItem('language', lang);
+            applyTranslation(lang);
+            document.getElementById('currentLangText').textContent = lang === 'tl' ? 'Tagalog' : 'English';
+            document.getElementById('langMenu').classList.remove('show');
+        }
+
+        function applyTranslation(lang) {
+            const dict = translations[lang] || translations['en'];
+            
+            document.querySelectorAll('.translatable').forEach(el => {
+                const key = el.getAttribute('data-original-text') || el.textContent.trim();
+                if (!el.getAttribute('data-original-text')) {
+                    el.setAttribute('data-original-text', key);
+                }
+                if (dict[key]) {
+                    el.textContent = dict[key];
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('language') || 'en';
+            document.getElementById('currentLangText').textContent = savedLang === 'tl' ? 'Tagalog' : 'English';
+            if (savedLang === 'tl') {
+                applyTranslation('tl');
+            }
         });
 
         // ===== SHOW/HIDE AREA REPRESENTATIVE SECTION =====
@@ -1020,7 +1133,6 @@
             }
         });
 
-        // ===== FILE UPLOAD HANDLING =====
         fileInput.addEventListener('change', function(e) {
             updateFileList(this.files);
         });
@@ -1065,7 +1177,6 @@
             updateFileList(fileInput.files);
         }
 
-        // ===== AUTO-CALCULATE AGE FROM DOB =====
         document.getElementById('dob').addEventListener('change', function() {
             if (this.value) {
                 const birthDate = new Date(this.value);
@@ -1081,144 +1192,22 @@
             }
         });
 
-        // ===== SUCCESS MODAL FUNCTIONS =====
         function showSuccessModal() {
-            // Generate random reference number
-            const refNum = 'DOC-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Math.floor(Math.random() * 9000) + 1000);
-            const queueNum = 'Q-' + String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
-            
-            document.getElementById('modalRefNumber').textContent = refNum;
-            document.getElementById('modalQueueBadge').textContent = 'Queue #' + queueNum;
-            
-            const docType = document.getElementById('documentType').value;
-            const docTypes = {
-                'clearance': 'Barangay Clearance',
-                'indigency': 'Certificate of Indigency',
-                'proof_residency': 'Proof of Residency'
-            };
-            document.getElementById('modalDocType').textContent = docTypes[docType] || docType || 'N/A';
-            
-            const surname = document.getElementById('surname').value || '';
-            const givenName = document.getElementById('givenName').value || '';
-            document.getElementById('modalApplicant').textContent = givenName + ' ' + surname;
-            
-            const dateObj = new Date(document.getElementById('signatureDate').value);
-            document.getElementById('modalDate').textContent = dateObj.toLocaleDateString('en-PH', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-
-            // SHOW THE MODAL
             const modal = document.getElementById('successModal');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-            
-            console.log('Modal should be visible now');
-            
-            // ✅ SAVE TO LOCAL STORAGE para lumabas sa dashboard
-            const requestData = {
-                id: Date.now(),
-                reference_number: refNum,
-                document_type: docType,
-                applicant: givenName + ' ' + surname,
-                date: document.getElementById('signatureDate').value,
-                status: 'pending',
-                created_at: new Date().toISOString()
-            };
-            
-            // Get existing requests from localStorage
-            let requests = JSON.parse(localStorage.getItem('document_requests') || '[]');
-            requests.unshift(requestData);
-            localStorage.setItem('document_requests', JSON.stringify(requests));
-            
-            console.log('✅ Saved to localStorage:', requestData);
         }
 
         function closeSuccessModal() {
             document.getElementById('successModal').classList.remove('active');
             document.body.style.overflow = 'auto';
-            
-            // Redirect to dashboard after closing
             window.location.href = "{{ url_for('dashboard') }}";
         }
 
-        // Close modal on outside click
         document.getElementById('successModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeSuccessModal();
             }
-        });
-
-        // ===== FORM SUBMIT HANDLER - FRONTEND ONLY =====
-        document.getElementById('clearanceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Form submitted - FRONTEND ONLY');
-
-            const form = this;
-
-            // Basic validation
-            const required = form.querySelectorAll('[required]');
-            let valid = true;
-            required.forEach(field => {
-                if (field.type === 'checkbox') {
-                    if (!field.checked) {
-                        field.style.outline = '2px solid #dc3545';
-                        valid = false;
-                    } else {
-                        field.style.outline = 'none';
-                    }
-                    return;
-                }
-                if (!field.value || !field.value.trim()) {
-                    field.style.borderColor = '#dc3545';
-                    valid = false;
-                } else {
-                    field.style.borderColor = '#1a5d3a';
-                }
-            });
-
-            const docType = document.getElementById('documentType').value;
-            if (docType === 'proof_residency') {
-                if (fileInput.files.length === 0) {
-                    fileUploadArea.style.borderColor = '#dc3545';
-                    valid = false;
-                } else {
-                    fileUploadArea.style.borderColor = '#1a5d3a';
-                }
-            }
-
-            if (!valid) {
-                alert('Please fill in all required fields (marked with *) and upload the signature.');
-                return;
-            }
-
-            // Disable submit button
-            const submitBtn = form.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-
-            // Simulate loading
-            setTimeout(() => {
-                // Show success modal
-                showSuccessModal();
-                
-                // Reset form
-                form.reset();
-                fileList.innerHTML = '';
-                document.getElementById('signatureDate').value = new Date().toISOString().split('T')[0];
-                areaRepSection.classList.remove('visible');
-                document.getElementById('repPosition').removeAttribute('required');
-                fileInput.removeAttribute('required');
-                fileUploadArea.style.borderColor = '#cbd5e1';
-                
-                document.querySelectorAll('input, select, textarea').forEach(f => {
-                    f.style.borderColor = '#e2e8e6';
-                });
-                
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-            }, 1500);
         });
 
         // ===== CLEAR FORM BUTTON =====
@@ -1235,30 +1224,28 @@
                 fileInput.removeAttribute('required');
                 fileUploadArea.style.borderColor = '#cbd5e1';
                 document.querySelectorAll('input, select, textarea').forEach(f => {
-                    f.style.borderColor = '#e2e8e6';
+                    f.style.borderColor = '#dde8e1';
                 });
             }
         });
 
-        // Clear border colors when user types
         document.querySelectorAll('input, select, textarea').forEach(field => {
             field.addEventListener('input', function() {
-                this.style.borderColor = '#e2e8e6';
+                this.style.borderColor = '#dde8e1';
             });
             field.addEventListener('change', function() {
                 if (this.value.trim()) {
-                    this.style.borderColor = '#1a5d3a';
+                    this.style.borderColor = '#1a6b42';
                 }
             });
         });
 
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
-                fileUploadArea.style.borderColor = '#1a5d3a';
+                fileUploadArea.style.borderColor = '#1a6b42';
             }
         });
 
-        // Auto-hide flash messages
         setTimeout(function() {
             const flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {
@@ -1269,117 +1256,109 @@
         }, 5000);
     </script>
 
-</body>
-<script>
-    // ===== FORM SUBMIT HANDLER - MAY TOTOONG BACKEND SAVE =====
-    document.getElementById('clearanceForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // Para hindi ma-refresh yung page
-        
-        // Basic validation
-        const required = this.querySelectorAll('[required]');
-        let valid = true;
-        required.forEach(field => {
-            if (field.type === 'checkbox') {
-                if (!field.checked) {
-                    field.style.outline = '2px solid #dc3545';
+    <!-- FORM SUBMIT HANDLER - MAY TOTOONG BACKEND SAVE -->
+    <script>
+        document.getElementById('clearanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const required = this.querySelectorAll('[required]');
+            let valid = true;
+            required.forEach(field => {
+                if (field.type === 'checkbox') {
+                    if (!field.checked) {
+                        field.style.outline = '2px solid #dc3545';
+                        valid = false;
+                    } else {
+                        field.style.outline = 'none';
+                    }
+                    return;
+                }
+                if (!field.value || !field.value.trim()) {
+                    field.style.borderColor = '#dc3545';
                     valid = false;
                 } else {
-                    field.style.outline = 'none';
+                    field.style.borderColor = '#1a6b42';
                 }
+            });
+
+            const docType = document.getElementById('documentType').value;
+            if (docType === 'proof_residency') {
+                if (fileInput.files.length === 0) {
+                    fileUploadArea.style.borderColor = '#dc3545';
+                    valid = false;
+                } else {
+                    fileUploadArea.style.borderColor = '#1a6b42';
+                }
+            }
+
+            if (!valid) {
+                alert('Please fill in all required fields (marked with *) and upload the signature.');
                 return;
             }
-            if (!field.value || !field.value.trim()) {
-                field.style.borderColor = '#dc3545';
-                valid = false;
-            } else {
-                field.style.borderColor = '#1a5d3a';
-            }
-        });
 
-        const docType = document.getElementById('documentType').value;
-        if (docType === 'proof_residency') {
-            if (fileInput.files.length === 0) {
-                fileUploadArea.style.borderColor = '#dc3545';
-                valid = false;
-            } else {
-                fileUploadArea.style.borderColor = '#1a5d3a';
-            }
-        }
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-        if (!valid) {
-            alert('Please fill in all required fields (marked with *) and upload the signature.');
-            return;
-        }
+            const formData = new FormData(this);
 
-        // Disable submit button
-        const submitBtn = document.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            fetch('/submit-document-request', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('modalRefNumber').textContent = data.reference_number;
+                    document.getElementById('modalQueueBadge').textContent = 'Queue #' + data.queuing_number;
+                    
+                    const docType2 = document.getElementById('documentType').value;
+                    const docTypes = {
+                        'clearance': 'Barangay Clearance',
+                        'indigency': 'Certificate of Indigency',
+                        'proof_residency': 'Proof of Residency'
+                    };
+                    document.getElementById('modalDocType').textContent = docTypes[docType2] || docType2 || 'N/A';
+                    
+                    const surname = document.getElementById('surname').value || '';
+                    const givenName = document.getElementById('givenName').value || '';
+                    document.getElementById('modalApplicant').textContent = givenName + ' ' + surname;
+                    
+                    const dateObj = new Date(document.getElementById('signatureDate').value);
+                    document.getElementById('modalDate').textContent = dateObj.toLocaleDateString('en-PH', { 
+                        year: 'numeric', month: 'long', day: 'numeric' 
+                    });
 
-        // ===== ACTUAL SAVE SA BACKEND =====
-        const formData = new FormData(this);
+                    showSuccessModal();
 
-        fetch('/submit-document-request', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // ✅ KUHA NATIN YUNG TOTOONG DATA GALING SA SERVER
-                document.getElementById('modalRefNumber').textContent = data.reference_number;
-                document.getElementById('modalQueueBadge').textContent = 'Queue #' + data.queuing_number;
-                
-                // Kunin yung details para sa modal
-                const docType2 = document.getElementById('documentType').value;
-                const docTypes = {
-                    'clearance': 'Barangay Clearance',
-                    'indigency': 'Certificate of Indigency',
-                    'proof_residency': 'Proof of Residency'
-                };
-                document.getElementById('modalDocType').textContent = docTypes[docType2] || docType2 || 'N/A';
-                
-                const surname = document.getElementById('surname').value || '';
-                const givenName = document.getElementById('givenName').value || '';
-                document.getElementById('modalApplicant').textContent = givenName + ' ' + surname;
-                
-                const dateObj = new Date(document.getElementById('signatureDate').value);
-                document.getElementById('modalDate').textContent = dateObj.toLocaleDateString('en-PH', { 
-                    year: 'numeric', month: 'long', day: 'numeric' 
-                });
+                    document.getElementById('clearanceForm').reset();
+                    document.getElementById('fileList').innerHTML = '';
+                    document.getElementById('signatureDate').value = new Date().toISOString().split('T')[0];
+                    areaRepSection.classList.remove('visible');
+                    document.getElementById('repPosition').removeAttribute('required');
+                    fileInput.removeAttribute('required');
+                    fileUploadArea.style.borderColor = '#cbd5e1';
+                    document.querySelectorAll('input, select, textarea').forEach(f => {
+                        f.style.borderColor = '#dde8e1';
+                    });
 
-                // SHOW THE MODAL
-                showSuccessModal();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
 
-                // Reset form
-                document.getElementById('clearanceForm').reset();
-                document.getElementById('fileList').innerHTML = '';
-                document.getElementById('signatureDate').value = new Date().toISOString().split('T')[0];
-                areaRepSection.classList.remove('visible');
-                document.getElementById('repPosition').removeAttribute('required');
-                fileInput.removeAttribute('required');
-                fileUploadArea.style.borderColor = '#cbd5e1';
-                document.querySelectorAll('input, select, textarea').forEach(f => {
-                    f.style.borderColor = '#e2e8e6';
-                });
-
-                // Enable button ulit
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error: ' + error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-
-            } else {
-                // Kung may error sa server
-                alert('Error: ' + (data.error || 'Unknown error'));
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Network error: ' + error);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+            });
         });
-    });
-</script>
+    </script>
+
+</body>
 </html>

@@ -177,11 +177,27 @@ def dashboard():
     cursor.execute("SELECT COUNT(*) as pending FROM event_permits WHERE user_id = %s AND status = 'pending'", (session['user_id'],))
     pending_events = cursor.fetchone()['pending']
     
+    cursor.execute("SELECT COUNT(*) as approved FROM event_permits WHERE user_id = %s AND status = 'approved'", (session['user_id'],))
+    approved_events = cursor.fetchone()['approved']
+    
+    cursor.execute("SELECT COUNT(*) as rejected FROM event_permits WHERE user_id = %s AND status = 'rejected'", (session['user_id'],))
+    rejected_events = cursor.fetchone()['rejected']
+    
     cursor.execute("SELECT * FROM announcements ORDER BY created_at DESC LIMIT 5")
     announcements = cursor.fetchall()
     
     cursor.execute("SELECT * FROM document_requests WHERE user_id = %s ORDER BY created_at DESC LIMIT 5", (session['user_id'],))
     recent_docs = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT id, event_name, event_date, start_time, end_time, venue, 
+               status, reference_number, queuing_number, created_at
+        FROM event_permits 
+        WHERE user_id = %s 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    """, (session['user_id'],))
+    recent_events = cursor.fetchall()
     
     conn.close()
     
@@ -193,8 +209,11 @@ def dashboard():
                          rejected_docs=rejected_docs,
                          total_events=total_events,
                          pending_events=pending_events,
+                         approved_events=approved_events,
+                         rejected_events=rejected_events,
                          announcements=announcements,
-                         recent_docs=recent_docs)
+                         recent_docs=recent_docs,
+                         recent_events=recent_events)
 
 @app.route('/profile')
 def profile():
@@ -224,7 +243,7 @@ def user_update_profile():
     
     if not first_name or not last_name or not email:
         flash('Please fill in all required fields.', 'danger')
-        return redirect(url_for('profile'))
+        return redirect(url_for('settings'))
     
     conn = get_db()
     cursor = conn.cursor()
@@ -244,7 +263,7 @@ def user_update_profile():
     session['email'] = email
     
     flash('Profile updated successfully!', 'success')
-    return redirect(url_for('profile'))
+    return redirect(url_for('settings'))
 
 @app.route('/user-change-password', methods=['POST'])
 def user_change_password():
@@ -258,15 +277,15 @@ def user_change_password():
     
     if not current_password or not new_password or not confirm_password:
         flash('Please fill in all fields.', 'danger')
-        return redirect(url_for('profile'))
+        return redirect(url_for('settings'))
     
     if new_password != confirm_password:
         flash('New passwords do not match.', 'danger')
-        return redirect(url_for('profile'))
+        return redirect(url_for('settings'))
     
     if len(new_password) < 8:
         flash('New password must be at least 8 characters.', 'danger')
-        return redirect(url_for('profile'))
+        return redirect(url_for('settings'))
     
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
@@ -276,7 +295,7 @@ def user_change_password():
     if not user or not check_password_hash(user['password'], current_password):
         conn.close()
         flash('Current password is incorrect.', 'danger')
-        return redirect(url_for('profile'))
+        return redirect(url_for('settings'))
     
     hashed_password = generate_password_hash(new_password)
     cursor.execute("UPDATE users SET password = %s WHERE id = %s", (hashed_password, session['user_id']))
@@ -284,7 +303,7 @@ def user_change_password():
     conn.close()
     
     flash('Password changed successfully!', 'success')
-    return redirect(url_for('profile'))
+    return redirect(url_for('settings'))
 
 @app.route('/events')
 def events():
@@ -305,7 +324,238 @@ def events():
     events = cursor.fetchall()
     conn.close()
     
-    return render_template('events.html', events=events)
+    return render_template('events_calendar.html', events=events)
+
+# ===== ADD EVENTS API =====
+@app.route('/api/events', methods=['GET'])
+def api_get_events():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first.'}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT e.*, u.first_name, u.last_name 
+        FROM event_permits e
+        JOIN users u ON e.user_id = u.id
+        WHERE e.status = 'approved'
+        ORDER BY e.event_date DESC
+    """)
+    events = cursor.fetchall()
+    conn.close()
+    
+    for event in events:
+        if event.get('event_date'):
+            if hasattr(event['event_date'], 'strftime'):
+                event['event_date'] = event['event_date'].strftime('%Y-%m-%d')
+        if event.get('created_at'):
+            if hasattr(event['created_at'], 'strftime'):
+                event['created_at'] = event['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+        if event.get('start_time'):
+            event['start_time'] = str(event['start_time'])
+        if event.get('end_time'):
+            event['end_time'] = str(event['end_time'])
+    
+    return jsonify({'success': True, 'events': events})
+
+@app.route('/api/events', methods=['POST'])
+def api_create_event():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first.'}), 401
+    
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    event_name = data.get('event_name', '').strip()
+    event_description = data.get('event_description', '').strip()
+    purpose = data.get('purpose', '').strip()
+    event_date = data.get('event_date', '').strip()
+    start_time = data.get('start_time', '').strip()
+    end_time = data.get('end_time', '').strip()
+    estimated_attendees = data.get('estimated_attendees', 0)
+    venue = data.get('venue', '').strip()
+    
+    if not event_name or not event_date or not start_time or not end_time or not venue:
+        return jsonify({'error': 'Please fill in all required fields.'}), 400
+    
+    if start_time >= end_time:
+        return jsonify({'error': 'End time must be after start time.'}), 400
+    
+    if start_time < '08:00' or start_time > '22:00':
+        return jsonify({'error': 'Start time must be between 8:00 AM and 10:00 PM.'}), 400
+    
+    if end_time < '08:00' or end_time > '22:00':
+        return jsonify({'error': 'End time must be between 8:00 AM and 10:00 PM.'}), 400
+    
+    try:
+        selected_date = datetime.datetime.strptime(event_date, '%Y-%m-%d').date()
+        today = datetime.date.today()
+        diff_days = (selected_date - today).days
+        
+        if diff_days < 10:
+            return jsonify({'error': 'Please apply at least 10 days before the event date.'}), 400
+    except ValueError:
+        return jsonify({'error': 'Invalid date format.'}), 400
+    
+    ref_num = f"BP-{datetime.datetime.now().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
+    queue_num = f"Q-{random.randint(1, 999):03d}"
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            INSERT INTO event_permits (
+                user_id, event_name, event_description, purpose, event_date, 
+                start_time, end_time, estimated_attendees, venue, 
+                status, reference_number, queuing_number
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s, %s)
+        """, (
+            session['user_id'], event_name, event_description, purpose, event_date,
+            start_time, end_time, estimated_attendees if estimated_attendees else 0,
+            venue, ref_num, queue_num
+        ))
+        conn.commit()
+        event_id = cursor.lastrowid
+        
+        cursor.execute("""
+            INSERT INTO notifications (user_id, title, message, notification_type)
+            VALUES (%s, %s, %s, 'permit_submitted')
+        """, (
+            session['user_id'], 'Permit Application Submitted',
+            f'Your event permit "{event_name}" has been submitted for review. Reference: {ref_num} | Queue: {queue_num}'
+        ))
+        conn.commit()
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Event permit submitted successfully',
+            'event_id': event_id,
+            'reference_number': ref_num,
+            'queuing_number': queue_num
+        }), 201
+        
+    except mysql.connector.Error as e:
+        conn.close()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+@app.route('/api/events/<int:event_id>', methods=['GET'])
+def api_get_event(event_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first.'}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT e.*, u.first_name, u.last_name, u.email 
+        FROM event_permits e
+        JOIN users u ON e.user_id = u.id
+        WHERE e.id = %s
+    """, (event_id,))
+    event = cursor.fetchone()
+    conn.close()
+    
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
+    
+    if event.get('event_date'):
+        if hasattr(event['event_date'], 'strftime'):
+            event['event_date'] = event['event_date'].strftime('%Y-%m-%d')
+    if event.get('created_at'):
+        if hasattr(event['created_at'], 'strftime'):
+            event['created_at'] = event['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+    if event.get('start_time'):
+        event['start_time'] = str(event['start_time'])
+    if event.get('end_time'):
+        event['end_time'] = str(event['end_time'])
+    
+    return jsonify({'success': True, 'event': event})
+
+@app.route('/api/events/<int:event_id>', methods=['PUT'])
+def api_update_event(event_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first.'}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM event_permits WHERE id = %s AND user_id = %s", (event_id, session['user_id']))
+    event = cursor.fetchone()
+    
+    if not event:
+        conn.close()
+        return jsonify({'error': 'Event not found or you do not have permission'}), 404
+    
+    if event['status'] != 'pending':
+        conn.close()
+        return jsonify({'error': 'Only pending events can be edited'}), 400
+    
+    data = request.get_json()
+    
+    event_name = data.get('event_name', event['event_name']).strip()
+    event_description = data.get('event_description', event['event_description']).strip()
+    purpose = data.get('purpose', event['purpose']).strip()
+    event_date = data.get('event_date', str(event['event_date'])).strip()
+    start_time = data.get('start_time', str(event['start_time'])).strip()
+    end_time = data.get('end_time', str(event['end_time'])).strip()
+    estimated_attendees = data.get('estimated_attendees', event['estimated_attendees'])
+    venue = data.get('venue', event['venue']).strip()
+    
+    if not event_name or not event_date or not start_time or not end_time or not venue:
+        conn.close()
+        return jsonify({'error': 'Please fill in all required fields.'}), 400
+    
+    if start_time >= end_time:
+        conn.close()
+        return jsonify({'error': 'End time must be after start time.'}), 400
+    
+    cursor.execute("""
+        UPDATE event_permits SET
+            event_name = %s,
+            event_description = %s,
+            purpose = %s,
+            event_date = %s,
+            start_time = %s,
+            end_time = %s,
+            estimated_attendees = %s,
+            venue = %s
+        WHERE id = %s
+    """, (event_name, event_description, purpose, event_date, start_time, end_time, estimated_attendees, venue, event_id))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Event updated successfully'})
+
+@app.route('/api/events/<int:event_id>', methods=['DELETE'])
+def api_delete_event(event_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first.'}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM event_permits WHERE id = %s AND user_id = %s", (event_id, session['user_id']))
+    event = cursor.fetchone()
+    
+    if not event:
+        conn.close()
+        return jsonify({'error': 'Event not found or you do not have permission'}), 404
+    
+    if event['status'] != 'pending':
+        conn.close()
+        return jsonify({'error': 'Only pending events can be deleted'}), 400
+    
+    cursor.execute("DELETE FROM event_permits WHERE id = %s", (event_id,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Event deleted successfully'})
 
 @app.route('/my-requests')
 def my_requests():
@@ -316,6 +566,7 @@ def my_requests():
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     
+    # Document requests
     cursor.execute("""
         SELECT * FROM document_requests 
         WHERE user_id = %s 
@@ -323,6 +574,7 @@ def my_requests():
     """, (session['user_id'],))
     document_requests = cursor.fetchall()
     
+    # Event permits
     cursor.execute("""
         SELECT * FROM event_permits 
         WHERE user_id = %s
@@ -330,11 +582,45 @@ def my_requests():
     """, (session['user_id'],))
     event_permits = cursor.fetchall()
     
+    # Document stats
+    cursor.execute("SELECT COUNT(*) as total FROM document_requests WHERE user_id = %s", (session['user_id'],))
+    total_docs = cursor.fetchone()['total']
+    
+    cursor.execute("SELECT COUNT(*) as pending FROM document_requests WHERE user_id = %s AND status = 'pending'", (session['user_id'],))
+    pending_docs = cursor.fetchone()['pending']
+    
+    cursor.execute("SELECT COUNT(*) as approved FROM document_requests WHERE user_id = %s AND status = 'approved'", (session['user_id'],))
+    approved_docs = cursor.fetchone()['approved']
+    
+    cursor.execute("SELECT COUNT(*) as rejected FROM document_requests WHERE user_id = %s AND status = 'rejected'", (session['user_id'],))
+    rejected_docs = cursor.fetchone()['rejected']
+    
+    # Event permit stats
+    cursor.execute("SELECT COUNT(*) as total FROM event_permits WHERE user_id = %s", (session['user_id'],))
+    total_events = cursor.fetchone()['total']
+    
+    cursor.execute("SELECT COUNT(*) as pending FROM event_permits WHERE user_id = %s AND status = 'pending'", (session['user_id'],))
+    pending_events = cursor.fetchone()['pending']
+    
+    cursor.execute("SELECT COUNT(*) as approved FROM event_permits WHERE user_id = %s AND status = 'approved'", (session['user_id'],))
+    approved_events = cursor.fetchone()['approved']
+    
+    cursor.execute("SELECT COUNT(*) as rejected FROM event_permits WHERE user_id = %s AND status = 'rejected'", (session['user_id'],))
+    rejected_events = cursor.fetchone()['rejected']
+    
     conn.close()
     
     return render_template('my_requests.html', 
                          document_requests=document_requests,
-                         event_permits=event_permits)
+                         event_permits=event_permits,
+                         total_docs=total_docs,
+                         pending_docs=pending_docs,
+                         approved_docs=approved_docs,
+                         rejected_docs=rejected_docs,
+                         total_events=total_events,
+                         pending_events=pending_events,
+                         approved_events=approved_events,
+                         rejected_events=rejected_events)
 
 @app.route('/my_request')
 def my_request():
@@ -417,26 +703,18 @@ def submit_document_request():
         queue_num = f"Q-{random.randint(1, 999):03d}"
         
         # 4. I-INSERT LANG YUNG MGA MAY COLUMNS NA (para safe)
-        # DITO ANG PINAKAMAHALAGA - WALANG DUPLICATE AT I-SKIP YUNG 'type'
         insert_cols = ['user_id', 'document_type', 'reference_number', 'status']
         insert_vals = [session['user_id'], data.get('document_type', 'clearance'), ref_num, 'pending']
         
-        # Kung may queuing_number sa database, idagdag natin
         if 'queuing_number' in col_names:
             insert_cols.append('queuing_number')
             insert_vals.append(queue_num)
         
-        # Para sa lahat ng ibang fields na nasa form (surname, given_name, etc.)
-        # Para hindi mag-error sa "Unknown column" o "Duplicate column", susuriin natin kung meron sa database
-        # IMPORTANTE: I-SKIP natin yung mga key na nandun na sa insert_cols para walang duplicate
-        # IMPORTANTE: I-SKIP yung 'type' kasi hindi natin kailangan
-        # IMPORTANTE: I-SKIP yung 'fileInput' (file input ay hindi kailangan isave ngayon)
         for key, value in data.items():
             if key in col_names and key not in insert_cols and key != 'type' and key != 'fileInput':
                 insert_cols.append(key)
                 insert_vals.append(value)
         
-        # Gumawa ng dynamic SQL string para sa mga columns na meron
         placeholders = ', '.join(['%s'] * len(insert_cols))
         columns_str = ', '.join(insert_cols)
         
@@ -445,11 +723,9 @@ def submit_document_request():
         print(f"🔧 VALUES: {insert_vals}")
         print("=" * 50)
         
-        # 5. EXECUTE AT COMMIT
         cursor.execute(sql, tuple(insert_vals))
         conn.commit()
         
-        # 6. CHECK KUNG TALAGANG NAPASOK
         cursor.execute("SELECT * FROM document_requests ORDER BY id DESC LIMIT 1")
         last_row = cursor.fetchone()
         print("✅ LAST ROW SA DATABASE:")
@@ -569,6 +845,143 @@ def apply_permit_post():
         return redirect(url_for('apply_permit'))
     finally:
         conn.close()
+
+
+# ============================================================
+# ===== CREATE PERMIT VIA API (JSON) =====
+# ============================================================
+@app.route('/api/permits', methods=['POST'])
+def api_create_permit():
+    if 'user_id' not in session:
+        return jsonify({'message': 'Please login first.'}), 401
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'message': 'Walang data na natanggap.'}), 400
+        
+        event_name = (data.get('event_name') or '').strip()
+        event_description = (data.get('event_description') or '').strip()
+        purpose = (data.get('purpose') or '').strip()
+        event_date = (data.get('event_date') or '').strip()
+        start_time = (data.get('start_time') or '').strip()[:5]
+        end_time = (data.get('end_time') or '').strip()[:5]
+        venue = (data.get('venue') or '').strip()
+        attendees = data.get('estimated_attendees', 0)
+        requirement_name = data.get('requirement')
+        
+        # Basic validation
+        if not event_name:
+            return jsonify({'message': 'Kailangan ang event name.'}), 400
+        if not venue:
+            return jsonify({'message': 'Kailangan ang venue.'}), 400
+        if not event_date or not start_time or not end_time:
+            return jsonify({'message': 'Kailangan ang date at time.'}), 400
+        
+        # Attendees validation
+        try:
+            attendees = int(attendees)
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid attendees value.'}), 400
+        
+        if attendees < 1 or attendees > 300:
+            return jsonify({'message': 'Ang attendees ay dapat 1 hanggang 300 lamang.'}), 400
+        
+        # Time validation
+        if start_time >= end_time:
+            return jsonify({'message': 'End time dapat pagkatapos ng start time.'}), 400
+        
+        if start_time < '08:00' or start_time > '22:00':
+            return jsonify({'message': 'Start time dapat 8:00 AM – 10:00 PM.'}), 400
+        
+        if end_time < '08:00' or end_time > '22:00':
+            return jsonify({'message': 'End time dapat 8:00 AM – 10:00 PM.'}), 400
+        
+        # 10-day rule
+        try:
+            selected_date = datetime.datetime.strptime(event_date, '%Y-%m-%d').date()
+            today = datetime.date.today()
+            diff_days = (selected_date - today).days
+            
+            if diff_days < 10:
+                return jsonify({
+                    'message': 'Please apply at least 10 days before the event date.'
+                }), 400
+        except ValueError:
+            return jsonify({'message': 'Invalid date format.'}), 400
+        
+        # Double-check overlap
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT id FROM event_permits 
+            WHERE venue = %s 
+              AND event_date = %s 
+              AND status IN ('pending', 'approved')
+              AND start_time < %s 
+              AND end_time > %s
+            LIMIT 1
+        """, (venue, event_date, end_time, start_time))
+        
+        conflict = cursor.fetchone()
+        
+        if conflict:
+            conn.close()
+            return jsonify({
+                'message': 'Paumanhin, may naka-book na sa slot na ito.'
+            }), 409
+        
+        # Generate reference + queue
+        ref_num = f"BP-{datetime.datetime.now().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
+        queue_num = f"Q-{random.randint(1, 999):03d}"
+        
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO event_permits (
+                user_id, event_name, event_description, purpose, event_date, 
+                start_time, end_time, estimated_attendees, venue, 
+                status, requirements_file, reference_number, queuing_number
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s, %s, %s)
+        """, (
+            session['user_id'], event_name, event_description, purpose, event_date,
+            start_time, end_time, attendees, venue,
+            requirement_name, ref_num, queue_num
+        ))
+        conn.commit()
+        event_id = cursor.lastrowid
+        
+        # Notification
+        cursor.execute("""
+            INSERT INTO notifications (user_id, title, message, notification_type)
+            VALUES (%s, %s, %s, 'permit_submitted')
+        """, (
+            session['user_id'], 'Permit Application Submitted',
+            f'Your event permit "{event_name}" has been submitted for review. Reference: {ref_num} | Queue: {queue_num}'
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Permit submitted successfully.',
+            'event_id': event_id,
+            'reference_number': ref_num,
+            'queuing_number': queue_num
+        }), 201
+        
+    except mysql.connector.Error as e:
+        try:
+            conn.close()
+        except:
+            pass
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Database error: {str(e)}'}), 500
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
 
 # ============================================================
 # ===== HEAD ADMIN DASHBOARD =====
@@ -833,7 +1246,35 @@ def admin_event_details(event_id):
     return jsonify(event)
 
 # ============================================================
-# ===== SETTINGS =====
+# ===== USER SETTINGS (para sa regular users) =====
+# ============================================================
+
+@app.route('/settings')
+def settings():
+    # 1. Siguraduhing naka-login
+    if 'user_id' not in session:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('login'))
+    
+    # 2. Kunin ang user info
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+    user = cursor.fetchone()
+    conn.close()
+    
+    # 3. Kung HEAD ADMIN, ibalik sa admin settings
+    if session.get('role') == 'head_admin':
+        return redirect(url_for('admin_settings'))
+    
+    # 4. Para sa regular user/resident -> templates/settings.html
+    return render_template('settings.html',
+                         user=user,
+                         show_settings=True)
+
+
+# ============================================================
+# ===== ADMIN SETTINGS (para sa head admin lang) =====
 # ============================================================
 
 @app.route('/admin-settings')
@@ -842,7 +1283,183 @@ def admin_settings():
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
     
-    return render_template('admin/settings.html')
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_config (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            barangay_name VARCHAR(255),
+            barangay_address VARCHAR(255),
+            contact_number VARCHAR(50),
+            email_notifications VARCHAR(20) DEFAULT 'enabled',
+            maintenance_mode BOOLEAN DEFAULT FALSE,
+            maintenance_message TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    
+    cursor.execute("SELECT * FROM system_config LIMIT 1")
+    config = cursor.fetchone()
+    
+    if not config:
+        cursor.execute("""
+            INSERT INTO system_config (barangay_name, barangay_address, contact_number, email_notifications, maintenance_mode)
+            VALUES ('Barangay Sto. Nino', 'Paranaque City', 'N/A', 'enabled', FALSE)
+        """)
+        conn.commit()
+        cursor.execute("SELECT * FROM system_config LIMIT 1")
+        config = cursor.fetchone()
+    
+    conn.close()
+    
+    maintenance_mode = config.get('maintenance_mode', False) if config else False
+    
+    return render_template('admin_settings.html',
+                         config=config,
+                         maintenance_mode=maintenance_mode,
+                         user=None,
+                         show_settings=True)
+
+@app.route('/update-profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session or session.get('role') != 'head_admin':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    first_name = request.form.get('first_name', '').strip()
+    last_name = request.form.get('last_name', '').strip()
+    email = request.form.get('email', '').strip()
+    
+    if not first_name or not last_name or not email:
+        flash('Please fill in all fields.', 'danger')
+        return redirect(url_for('admin_settings'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE users SET first_name = %s, last_name = %s, email = %s
+        WHERE id = %s
+    """, (first_name, last_name, email, session['user_id']))
+    conn.commit()
+    conn.close()
+    
+    session['fullname'] = f"{first_name} {last_name}"
+    session['email'] = email
+    
+    flash('Profile updated successfully!', 'success')
+    return redirect(url_for('admin_settings'))
+
+@app.route('/change-password', methods=['POST'])
+def change_password():
+    if 'user_id' not in session or session.get('role') != 'head_admin':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+    
+    if not current_password or not new_password or not confirm_password:
+        flash('Please fill in all fields.', 'danger')
+        return redirect(url_for('admin_settings'))
+    
+    if new_password != confirm_password:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('admin_settings'))
+    
+    if len(new_password) < 8:
+        flash('New password must be at least 8 characters.', 'danger')
+        return redirect(url_for('admin_settings'))
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT password FROM users WHERE id = %s", (session['user_id'],))
+    user = cursor.fetchone()
+    
+    if not user or not check_password_hash(user['password'], current_password):
+        conn.close()
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('admin_settings'))
+    
+    hashed_password = generate_password_hash(new_password)
+    cursor.execute("UPDATE users SET password = %s WHERE id = %s", (hashed_password, session['user_id']))
+    conn.commit()
+    conn.close()
+    
+    flash('Password changed successfully!', 'success')
+    return redirect(url_for('admin_settings'))
+
+@app.route('/system-config', methods=['POST'])
+def system_config():
+    if 'user_id' not in session or session.get('role') != 'head_admin':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    barangay_name = request.form.get('barangay_name', '').strip()
+    barangay_address = request.form.get('barangay_address', '').strip()
+    contact_number = request.form.get('contact_number', '').strip()
+    email_notifications = request.form.get('email_notifications', 'enabled')
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT id FROM system_config LIMIT 1")
+    config_exists = cursor.fetchone()
+    
+    if config_exists:
+        cursor.execute("""
+            UPDATE system_config 
+            SET barangay_name = %s, barangay_address = %s, contact_number = %s, email_notifications = %s
+            WHERE id = 1
+        """, (barangay_name, barangay_address, contact_number, email_notifications))
+    else:
+        cursor.execute("""
+            INSERT INTO system_config (barangay_name, barangay_address, contact_number, email_notifications)
+            VALUES (%s, %s, %s, %s)
+        """, (barangay_name, barangay_address, contact_number, email_notifications))
+    
+    conn.commit()
+    conn.close()
+    
+    flash('System configuration updated successfully!', 'success')
+    return redirect(url_for('admin_settings'))
+
+@app.route('/toggle-maintenance', methods=['POST'])
+def toggle_maintenance():
+    if 'user_id' not in session or session.get('role') != 'head_admin':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    maintenance_message = request.form.get('maintenance_message', 'System is currently under maintenance. Please check back later.')
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT maintenance_mode FROM system_config WHERE id = 1")
+    config = cursor.fetchone()
+    
+    if config:
+        new_mode = not config['maintenance_mode']
+        cursor.execute("""
+            UPDATE system_config 
+            SET maintenance_mode = %s, maintenance_message = %s
+            WHERE id = 1
+        """, (new_mode, maintenance_message))
+    else:
+        new_mode = True
+        cursor.execute("""
+            INSERT INTO system_config (maintenance_mode, maintenance_message)
+            VALUES (TRUE, %s)
+        """, (maintenance_message,))
+    
+    conn.commit()
+    conn.close()
+    
+    status = 'ON' if new_mode else 'OFF'
+    flash(f'Maintenance mode turned {status}!', 'success')
+    return redirect(url_for('admin_settings'))
 
 # ============================================================
 # ===== USER MANAGEMENT =====
@@ -1239,192 +1856,6 @@ def send_email_all():
     return redirect(url_for('announcements'))
 
 # ============================================================
-# ===== SETTINGS (HEAD ADMIN ONLY) =====
-# ============================================================
-
-@app.route('/settings')
-def settings():
-    if 'user_id' not in session or session.get('role') != 'head_admin':
-        flash('Please login as Head Admin.', 'danger')
-        return redirect(url_for('login'))
-    
-    conn = get_db()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS system_config (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            barangay_name VARCHAR(255),
-            barangay_address VARCHAR(255),
-            contact_number VARCHAR(50),
-            email_notifications VARCHAR(20) DEFAULT 'enabled',
-            maintenance_mode BOOLEAN DEFAULT FALSE,
-            maintenance_message TEXT,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    
-    cursor.execute("SELECT * FROM system_config LIMIT 1")
-    config = cursor.fetchone()
-    
-    if not config:
-        cursor.execute("""
-            INSERT INTO system_config (barangay_name, barangay_address, contact_number, email_notifications, maintenance_mode)
-            VALUES ('Barangay Sto. Nino', 'Paranaque City', 'N/A', 'enabled', FALSE)
-        """)
-        conn.commit()
-        cursor.execute("SELECT * FROM system_config LIMIT 1")
-        config = cursor.fetchone()
-    
-    conn.close()
-    
-    maintenance_mode = config.get('maintenance_mode', False) if config else False
-    
-    return render_template('admin/settings.html', 
-                         config=config,
-                         maintenance_mode=maintenance_mode)
-
-@app.route('/update-profile', methods=['POST'])
-def update_profile():
-    if 'user_id' not in session or session.get('role') != 'head_admin':
-        flash('Unauthorized access.', 'danger')
-        return redirect(url_for('login'))
-    
-    first_name = request.form.get('first_name', '').strip()
-    last_name = request.form.get('last_name', '').strip()
-    email = request.form.get('email', '').strip()
-    
-    if not first_name or not last_name or not email:
-        flash('Please fill in all fields.', 'danger')
-        return redirect(url_for('settings'))
-    
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE users SET first_name = %s, last_name = %s, email = %s
-        WHERE id = %s
-    """, (first_name, last_name, email, session['user_id']))
-    conn.commit()
-    conn.close()
-    
-    session['fullname'] = f"{first_name} {last_name}"
-    session['email'] = email
-    
-    flash('Profile updated successfully!', 'success')
-    return redirect(url_for('settings'))
-
-@app.route('/change-password', methods=['POST'])
-def change_password():
-    if 'user_id' not in session or session.get('role') != 'head_admin':
-        flash('Unauthorized access.', 'danger')
-        return redirect(url_for('login'))
-    
-    current_password = request.form.get('current_password', '')
-    new_password = request.form.get('new_password', '')
-    confirm_password = request.form.get('confirm_password', '')
-    
-    if not current_password or not new_password or not confirm_password:
-        flash('Please fill in all fields.', 'danger')
-        return redirect(url_for('settings'))
-    
-    if new_password != confirm_password:
-        flash('New passwords do not match.', 'danger')
-        return redirect(url_for('settings'))
-    
-    if len(new_password) < 8:
-        flash('New password must be at least 8 characters.', 'danger')
-        return redirect(url_for('settings'))
-    
-    conn = get_db()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT password FROM users WHERE id = %s", (session['user_id'],))
-    user = cursor.fetchone()
-    
-    if not user or not check_password_hash(user['password'], current_password):
-        conn.close()
-        flash('Current password is incorrect.', 'danger')
-        return redirect(url_for('settings'))
-    
-    hashed_password = generate_password_hash(new_password)
-    cursor.execute("UPDATE users SET password = %s WHERE id = %s", (hashed_password, session['user_id']))
-    conn.commit()
-    conn.close()
-    
-    flash('Password changed successfully!', 'success')
-    return redirect(url_for('settings'))
-
-@app.route('/system-config', methods=['POST'])
-def system_config():
-    if 'user_id' not in session or session.get('role') != 'head_admin':
-        flash('Unauthorized access.', 'danger')
-        return redirect(url_for('login'))
-    
-    barangay_name = request.form.get('barangay_name', '').strip()
-    barangay_address = request.form.get('barangay_address', '').strip()
-    contact_number = request.form.get('contact_number', '').strip()
-    email_notifications = request.form.get('email_notifications', 'enabled')
-    
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT id FROM system_config LIMIT 1")
-    config_exists = cursor.fetchone()
-    
-    if config_exists:
-        cursor.execute("""
-            UPDATE system_config 
-            SET barangay_name = %s, barangay_address = %s, contact_number = %s, email_notifications = %s
-            WHERE id = 1
-        """, (barangay_name, barangay_address, contact_number, email_notifications))
-    else:
-        cursor.execute("""
-            INSERT INTO system_config (barangay_name, barangay_address, contact_number, email_notifications)
-            VALUES (%s, %s, %s, %s)
-        """, (barangay_name, barangay_address, contact_number, email_notifications))
-    
-    conn.commit()
-    conn.close()
-    
-    flash('System configuration updated successfully!', 'success')
-    return redirect(url_for('settings'))
-
-@app.route('/toggle-maintenance', methods=['POST'])
-def toggle_maintenance():
-    if 'user_id' not in session or session.get('role') != 'head_admin':
-        flash('Unauthorized access.', 'danger')
-        return redirect(url_for('login'))
-    
-    maintenance_message = request.form.get('maintenance_message', 'System is currently under maintenance. Please check back later.')
-    
-    conn = get_db()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute("SELECT maintenance_mode FROM system_config WHERE id = 1")
-    config = cursor.fetchone()
-    
-    if config:
-        new_mode = not config['maintenance_mode']
-        cursor.execute("""
-            UPDATE system_config 
-            SET maintenance_mode = %s, maintenance_message = %s
-            WHERE id = 1
-        """, (new_mode, maintenance_message))
-    else:
-        new_mode = True
-        cursor.execute("""
-            INSERT INTO system_config (maintenance_mode, maintenance_message)
-            VALUES (TRUE, %s)
-        """, (maintenance_message,))
-    
-    conn.commit()
-    conn.close()
-    
-    status = 'ON' if new_mode else 'OFF'
-    flash(f'Maintenance mode turned {status}!', 'success')
-    return redirect(url_for('settings'))
-
-# ============================================================
 # ===== DATABASE BACKUP API =====
 # ============================================================
 
@@ -1463,7 +1894,7 @@ def download_backup():
     
     if not backup_files:
         flash('No backup files found.', 'danger')
-        return redirect(url_for('settings'))
+        return redirect(url_for('admin_settings'))
     
     latest_backup = max(backup_files, key=os.path.getctime)
     
@@ -1501,6 +1932,176 @@ def check_session():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+# ============================================================
+# ===== FORGOT PASSWORD ROUTE =====
+# ============================================================
+@app.route('/forgot-password', methods=['GET', 'POST'])
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.form.get('email', '').strip()
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+    
+    if not email or not current_password or not new_password or not confirm_password:
+        flash('Please fill in all fields.', 'danger')
+        return redirect(url_for('login'))
+    
+    if new_password != confirm_password:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('login'))
+    
+    if len(new_password) < 8:
+        flash('New password must be at least 8 characters long.', 'danger')
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, password FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    
+    if not user:
+        conn.close()
+        flash('Email address not found.', 'danger')
+        return redirect(url_for('login'))
+    
+    if not check_password_hash(user['password'], current_password):
+        conn.close()
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('login'))
+    
+    hashed_password = generate_password_hash(new_password)
+    cursor.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_password, email))
+    conn.commit()
+    conn.close()
+    
+    flash('Password reset successfully! You can now login with your new password.', 'success')
+    return redirect(url_for('login'))
+
+# ===== CHECK PERMIT AVAILABILITY =====
+@app.route('/api/permits/check-availability', methods=['GET'])
+def check_permit_availability():
+    if 'user_id' not in session:
+        return jsonify({'available': False, 'message': 'Please login first.'}), 401
+    
+    try:
+        date_str = request.args.get('date')
+        start_str = request.args.get('start_time')
+        end_str = request.args.get('end_time')
+        venue = request.args.get('venue')
+        
+        # Validate presence
+        if not all([date_str, start_str, end_str, venue]):
+            return jsonify({
+                'available': False,
+                'message': 'Kulang ang parameters.'
+            })
+        
+        # Normalize time (pwedeng "08:00" o "08:00:00")
+        start_time = start_str[:5]  # "08:00"
+        end_time = end_str[:5]      # "10:00"
+        
+        # Server-side validation ng business rules
+        if start_time >= end_time:
+            return jsonify({
+                'available': False,
+                'message': 'End time dapat pagkatapos ng start time.'
+            })
+        
+        if start_time < '08:00' or start_time > '22:00':
+            return jsonify({
+                'available': False,
+                'message': 'Start time dapat 8:00 AM – 10:00 PM.'
+            })
+        
+        if end_time < '08:00' or end_time > '22:00':
+            return jsonify({
+                'available': False,
+                'message': 'End time dapat 8:00 AM – 10:00 PM.'
+            })
+        
+        # Check overlap sa existing permits (pending + approved)
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT id, start_time, end_time 
+            FROM event_permits 
+            WHERE venue = %s 
+              AND event_date = %s 
+              AND status IN ('pending', 'approved')
+              AND start_time < %s 
+              AND end_time > %s
+            LIMIT 1
+        """, (venue, date_str, end_time, start_time))
+        
+        conflict = cursor.fetchone()
+        conn.close()
+        
+        if conflict:
+            conflict_start = str(conflict['start_time'])[:5]
+            conflict_end = str(conflict['end_time'])[:5]
+            return jsonify({
+                'available': False,
+                'message': f'May naka-book na sa {venue} mula {conflict_start} hanggang {conflict_end}.'
+            })
+        
+        return jsonify({'available': True})
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'available': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+
+# ===== API: UNREAD ANNOUNCEMENTS COUNT =====
+@app.route('/api/announcements/unread_count', methods=['GET'])
+def api_unread_announcements_count():
+    if 'user_id' not in session:
+        return jsonify({'unread_count': 0})
+    
+    try:
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Simple: count ng announcements sa last 7 days
+        cursor.execute("""
+            SELECT COUNT(*) as count
+            FROM announcements
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        """)
+        
+        result = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({'unread_count': result['count'] if result else 0})
+        
+    except Exception as e:
+        print(f"Error fetching unread count: {e}")
+        return jsonify({'unread_count': 0})
+    # ===== USER ANNOUNCEMENTS (Para sa Residents) =====
+@app.route('/user-announcements')
+def user_announcements():
+    if 'user_id' not in session:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT a.*, u.first_name, u.last_name 
+        FROM announcements a 
+        LEFT JOIN users u ON a.created_by = u.id 
+        ORDER BY a.created_at DESC
+    """)
+    announcements = cursor.fetchall()
+    conn.close()
+    
+    return render_template('user_announcements.html', announcements=announcements)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -99,6 +99,9 @@
             font-weight: 500;
             font-size: 14px;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .navbar-custom .nav-links a:hover {
@@ -126,6 +129,26 @@
             background: var(--primary-600);
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(34, 139, 84, 0.3);
+        }
+
+        /* ===== ANNOUNCEMENTS BADGE ===== */
+        .navbar-custom .nav-links .announcements-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .navbar-custom .nav-links .badge-notification {
+            background: #dc3545;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 1.4;
         }
 
         .hamburger {
@@ -244,10 +267,28 @@
         </button>
 
         <ul class="nav-links" id="navLinks">
-            <li><a href="{{ url_for('index') }}#services">Services</a></li>
-            <li><a href="{{ url_for('index') }}#announcements">Announcements</a></li>
-            <li><a href="{{ url_for('index') }}#events">Events</a></li>
-            <!-- Removed login/register/logout buttons and dashboard link -->
+            <li>
+                <a href="{{ url_for('index') }}#services">Services</a>
+            </li>
+            <li>
+                <a href="{{ url_for('user_announcements') }}" class="announcements-link">
+                    Announcements
+                    <span id="announcementBadge" class="badge-notification" style="display: none;">0</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('events') }}">
+                    <i class="fas fa-calendar-alt"></i> Events Calendar
+                </a>
+            </li>
+
+            {% if show_settings %}
+            <li>
+                <a href="{{ url_for('settings') }}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </nav>
 
@@ -274,7 +315,7 @@
     </footer>
 
     <script>
-        // Hamburger menu toggle
+        // ===== HAMBURGER MENU TOGGLE =====
         document.getElementById('hamburger').addEventListener('click', function() {
             document.getElementById('navLinks').classList.toggle('open');
         });
@@ -285,7 +326,28 @@
                 document.getElementById('navLinks').classList.remove('open');
             });
         });
+
+        // ===== NOTIFICATION BADGE (Announcements) =====
+        async function updateAnnouncementBadge() {
+            try {
+                const response = await fetch('/api/announcements/unread-count');
+                if (!response.ok) return;
+                const data = await response.json();
+                const badge = document.getElementById('announcementBadge');
+                if (badge && data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'inline-block';
+                } else if (badge) {
+                    badge.style.display = 'none';
+                }
+            } catch (e) {
+                console.log('Announcement badge error:', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateAnnouncementBadge);
     </script>
 
     {% block scripts %}{% endblock %}
 </body>
+</html>
