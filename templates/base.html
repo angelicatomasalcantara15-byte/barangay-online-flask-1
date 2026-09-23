@@ -27,11 +27,13 @@
             --neutral-50: #f4f8f5;
         }
 
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
 
         body {
             font-family: 'Inter', sans-serif;
@@ -40,6 +42,7 @@
             display: flex;
             flex-direction: column;
         }
+
 
         /* ===== NAVBAR ===== */
         .navbar-custom {
@@ -56,12 +59,14 @@
             gap: 12px;
         }
 
+
         .navbar-custom .logo {
             display: flex;
             align-items: center;
             gap: 10px;
             text-decoration: none;
         }
+
 
         .navbar-custom .logo i {
             font-size: 28px;
@@ -71,11 +76,13 @@
             border-radius: 10px;
         }
 
+
         .navbar-custom .logo span {
             font-size: 20px;
             font-weight: 700;
             color: var(--primary-800);
         }
+
 
         .navbar-custom .logo span small {
             font-weight: 400;
@@ -83,6 +90,7 @@
             font-size: 12px;
             display: block;
         }
+
 
         .navbar-custom .nav-links {
             display: flex;
@@ -92,6 +100,7 @@
             margin: 0;
             padding: 0;
         }
+
 
         .navbar-custom .nav-links a {
             text-decoration: none;
@@ -104,9 +113,11 @@
             gap: 6px;
         }
 
+
         .navbar-custom .nav-links a:hover {
             color: var(--primary-500);
         }
+
 
         .navbar-custom .nav-links .btn-nav {
             padding: 10px 24px;
@@ -120,16 +131,19 @@
             display: inline-block;
         }
 
+
         .navbar-custom .nav-links .btn-nav-primary {
             background: var(--primary-500);
             color: white;
         }
+
 
         .navbar-custom .nav-links .btn-nav-primary:hover {
             background: var(--primary-600);
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(34, 139, 84, 0.3);
         }
+
 
         /* ===== ANNOUNCEMENTS BADGE ===== */
         .navbar-custom .nav-links .announcements-link {
@@ -138,6 +152,7 @@
             align-items: center;
             gap: 6px;
         }
+
 
         .navbar-custom .nav-links .badge-notification {
             background: #dc3545;
@@ -151,6 +166,7 @@
             line-height: 1.4;
         }
 
+
         .hamburger {
             display: none;
             flex-direction: column;
@@ -161,6 +177,7 @@
             padding: 4px;
         }
 
+
         .hamburger span {
             width: 28px;
             height: 3px;
@@ -168,6 +185,7 @@
             border-radius: 4px;
             transition: all 0.3s ease;
         }
+
 
         /* ===== FOOTER ===== */
         .footer-custom {
@@ -178,20 +196,24 @@
             margin-top: auto;
         }
 
+
         .footer-custom .footer-logo {
             font-size: 20px;
             font-weight: 700;
             color: white;
         }
 
+
         .footer-custom .footer-logo span {
             color: #a3dbb8;
         }
+
 
         .footer-custom p {
             font-size: 14px;
             margin-top: 8px;
         }
+
 
         .footer-custom .social-links {
             display: flex;
@@ -200,22 +222,26 @@
             margin-top: 16px;
         }
 
+
         .footer-custom .social-links a {
             color: rgba(255, 255, 255, 0.6);
             font-size: 20px;
             transition: all 0.3s ease;
         }
 
+
         .footer-custom .social-links a:hover {
             color: white;
             transform: translateY(-2px);
         }
+
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .navbar-custom {
                 padding: 12px 20px;
             }
+
 
             .navbar-custom .nav-links {
                 display: none;
@@ -226,19 +252,23 @@
                 border-top: 1px solid var(--neutral-100);
             }
 
+
             .navbar-custom .nav-links.open {
                 display: flex;
             }
+
 
             .hamburger {
                 display: flex;
             }
         }
 
+
         @media (max-width: 576px) {
             .navbar-custom .logo span {
                 font-size: 17px;
             }
+
 
             .navbar-custom .logo i {
                 font-size: 22px;
@@ -250,6 +280,7 @@
 </head>
 <body>
 
+
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar-custom">
         <a href="{{ url_for('index') }}" class="logo">
@@ -260,11 +291,13 @@
             </span>
         </a>
 
+
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
             <span></span>
             <span></span>
             <span></span>
         </button>
+
 
         <ul class="nav-links" id="navLinks">
             <li>
@@ -282,6 +315,7 @@
                 </a>
             </li>
 
+
             {% if show_settings %}
             <li>
                 <a href="{{ url_for('settings') }}">
@@ -292,10 +326,12 @@
         </ul>
     </nav>
 
+
     <!-- ===== MAIN CONTENT ===== -->
     <main>
         {% block content %}{% endblock %}
     </main>
+
 
     <!-- ===== FOOTER ===== -->
     <footer class="footer-custom">
@@ -314,11 +350,13 @@
         </div>
     </footer>
 
+
     <script>
         // ===== HAMBURGER MENU TOGGLE =====
         document.getElementById('hamburger').addEventListener('click', function() {
             document.getElementById('navLinks').classList.toggle('open');
         });
+
 
         // Close menu when clicking a link (mobile)
         document.querySelectorAll('.nav-links a').forEach(link => {
@@ -326,6 +364,7 @@
                 document.getElementById('navLinks').classList.remove('open');
             });
         });
+
 
         // ===== NOTIFICATION BADGE (Announcements) =====
         async function updateAnnouncementBadge() {
@@ -345,8 +384,10 @@
             }
         }
 
+
         document.addEventListener('DOMContentLoaded', updateAnnouncementBadge);
     </script>
+
 
     {% block scripts %}{% endblock %}
 </body>

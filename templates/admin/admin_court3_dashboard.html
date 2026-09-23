@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head Admin Dashboard - Barangay Sto. Niño</title>
+    <title>Court 3 Dashboard - Sampaguita Covered Court</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,7 +14,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
 
-        /* ===== NAVBAR ===== */
+        /* NAVBAR */
         .navbar {
             position: fixed;
             top: 0;
@@ -29,74 +29,14 @@
             padding: 0 30px;
             z-index: 99;
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
-            transition: left 0.3s ease;
         }
+        .navbar-left { display: flex; align-items: center; gap: 16px; }
+        .navbar-left .page-title { font-size: 17px; font-weight: 700; color: #0d2b1e; }
+        .navbar-left .page-title i { color: #1a5d3a; margin-right: 8px; }
+        .navbar-right { display: flex; align-items: center; gap: 16px; }
 
-        .navbar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .navbar-left .page-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: #0d2b1e;
-        }
-
-        .navbar-left .page-title i {
-            color: #1a5d3a;
-            margin-right: 8px;
-        }
-
-        .navbar-search {
-            display: flex;
-            align-items: center;
-            background: #f4f8f5;
-            border-radius: 50px;
-            padding: 8px 18px;
-            gap: 10px;
-            border: 1px solid #eef2f0;
-            transition: all 0.2s ease;
-            width: 280px;
-        }
-
-        .navbar-search:focus-within {
-            border-color: #1a5d3a;
-            box-shadow: 0 0 0 3px rgba(26,93,58,0.08);
-            background: white;
-        }
-
-        .navbar-search i {
-            color: #8a9a8f;
-            font-size: 14px;
-        }
-
-        .navbar-search input {
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 13px;
-            font-family: inherit;
-            color: #0d2b1e;
-            width: 100%;
-        }
-
-        .navbar-search input::placeholder {
-            color: #a8bdb2;
-        }
-
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        /* ===== PROFILE DROPDOWN ===== */
-        .profile-dropdown {
-            position: relative;
-        }
-
+        /* PROFILE DROPDOWN */
+        .profile-dropdown { position: relative; }
         .profile-trigger {
             display: flex;
             align-items: center;
@@ -108,12 +48,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
-        .profile-trigger:hover {
-            background: #eef8f2;
-            border-color: #d4f0df;
-        }
-
+        .profile-trigger:hover { background: #eef8f2; border-color: #d4f0df; }
         .profile-avatar {
             width: 36px;
             height: 36px;
@@ -125,36 +60,12 @@
             justify-content: center;
             font-weight: 700;
             font-size: 14px;
-            flex-shrink: 0;
         }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .profile-info .name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #0d2b1e;
-        }
-
-        .profile-info .role {
-            font-size: 11px;
-            color: #8a9a8f;
-            font-weight: 500;
-        }
-
-        .profile-trigger .chevron {
-            font-size: 11px;
-            color: #8a9a8f;
-            transition: transform 0.2s ease;
-        }
-
-        .profile-dropdown.open .profile-trigger .chevron {
-            transform: rotate(180deg);
-        }
+        .profile-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .profile-info .name { font-size: 13px; font-weight: 600; color: #0d2b1e; }
+        .profile-info .role { font-size: 11px; color: #8a9a8f; font-weight: 500; }
+        .profile-trigger .chevron { font-size: 11px; color: #8a9a8f; transition: transform 0.2s ease; }
+        .profile-dropdown.open .profile-trigger .chevron { transform: rotate(180deg); }
 
         .profile-menu {
             position: absolute;
@@ -172,31 +83,18 @@
             transition: all 0.2s ease;
             z-index: 1000;
         }
-
         .profile-dropdown.open .profile-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
-
         .profile-menu-header {
             padding: 12px 14px;
             border-bottom: 1px solid #f0f3f2;
             margin-bottom: 6px;
         }
-
-        .profile-menu-header .menu-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #0d2b1e;
-        }
-
-        .profile-menu-header .menu-email {
-            font-size: 12px;
-            color: #8a9a8f;
-            margin-top: 2px;
-        }
-
+        .profile-menu-header .menu-name { font-size: 14px; font-weight: 600; color: #0d2b1e; }
+        .profile-menu-header .menu-email { font-size: 12px; color: #8a9a8f; margin-top: 2px; }
         .profile-menu a {
             display: flex;
             align-items: center;
@@ -209,59 +107,15 @@
             border-radius: 8px;
             transition: all 0.15s ease;
         }
+        .profile-menu a:hover { background: #f4f8f5; color: #1a5d3a; }
+        .profile-menu a i { width: 18px; font-size: 14px; color: #8a9a8f; }
+        .profile-menu a:hover i { color: #1a5d3a; }
+        .profile-menu .divider { height: 1px; background: #f0f3f2; margin: 6px 0; }
+        .profile-menu .logout-link { color: #dc3545; }
+        .profile-menu .logout-link:hover { background: #fff5f5; color: #b91c1c; }
+        .profile-menu .logout-link i { color: #dc3545; }
 
-        .profile-menu a:hover {
-            background: #f4f8f5;
-            color: #1a5d3a;
-        }
-
-        .profile-menu a i {
-            width: 18px;
-            font-size: 14px;
-            color: #8a9a8f;
-        }
-
-        .profile-menu a:hover i {
-            color: #1a5d3a;
-        }
-
-        .profile-menu .divider {
-            height: 1px;
-            background: #f0f3f2;
-            margin: 6px 0;
-        }
-
-        .profile-menu .logout-link {
-            color: #dc3545;
-        }
-
-        .profile-menu .logout-link:hover {
-            background: #fff5f5;
-            color: #b91c1c;
-        }
-
-        .profile-menu .logout-link i {
-            color: #dc3545;
-        }
-
-        .profile-menu .logout-link:hover i {
-            color: #b91c1c;
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        .main-with-sidebar {
-            margin-left: 280px;
-            padding: 92px 30px 25px;
-            min-height: 100vh;
-            animation: fadeInUp 0.4s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== SIDEBAR ===== */
+        /* SIDEBAR */
         .sidebar-custom {
             position: fixed;
             left: 0;
@@ -275,7 +129,6 @@
             overflow-y: auto;
             box-shadow: 2px 0 20px rgba(0,0,0,0.08);
         }
-
         .sidebar-header {
             text-align: center;
             padding-bottom: 30px;
@@ -291,21 +144,9 @@
             margin-bottom: 12px;
             background: white;
             padding: 4px;
-            transition: transform 0.3s ease;
         }
-        .sidebar-header .logo-img:hover {
-            transform: rotate(-10deg) scale(1.05);
-        }
-        .sidebar-header h2 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-        .sidebar-header small {
-            font-size: 11px;
-            opacity: 0.6;
-            letter-spacing: 0.5px;
-        }
+        .sidebar-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+        .sidebar-header small { font-size: 11px; opacity: 0.6; letter-spacing: 0.5px; }
 
         .sidebar-menu { list-style: none; }
         .sidebar-menu li { margin-bottom: 4px; }
@@ -317,72 +158,33 @@
             color: rgba(255,255,255,0.65);
             text-decoration: none;
             border-radius: 10px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
             font-size: 14px;
             font-weight: 500;
-            position: relative;
-            overflow: hidden;
             cursor: pointer;
-        }
-        .sidebar-menu a .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.6s linear;
-            pointer-events: none;
-        }
-        @keyframes rippleAnim {
-            to { transform: scale(4); opacity: 0; }
-        }
-        .sidebar-menu a::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 0;
-            background: #6bc48e;
-            border-radius: 0 4px 4px 0;
-            transition: height 0.3s ease;
-        }
-        .sidebar-menu a:hover::before,
-        .sidebar-menu .active a::before {
-            height: 24px;
-        }
-        .sidebar-menu a::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%) scaleX(0);
-            width: 3px;
-            height: 20px;
-            background: #6bc48e;
-            border-radius: 4px 0 0 4px;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .sidebar-menu .active a::after {
-            transform: translateY(-50%) scaleX(1);
         }
         .sidebar-menu a:hover {
             background: rgba(255,255,255,0.08);
             color: white;
-            transform: translateX(8px) scale(1.02);
-        }
-        .sidebar-menu a:active {
-            transform: scale(0.95);
+            transform: translateX(8px);
         }
         .sidebar-menu .active a {
             background: rgba(255,255,255,0.12);
             color: white;
-            box-shadow: inset 0 0 30px rgba(107, 196, 142, 0.08);
         }
-        .sidebar-menu i { width: 22px; font-size: 15px; transition: transform 0.3s ease; }
-        .sidebar-menu a:hover i { transform: scale(1.15); }
+        .sidebar-menu i { width: 22px; font-size: 15px; }
 
-        /* ===== BIG CARD ===== */
+        /* MAIN CONTENT */
+        .main-with-sidebar {
+            margin-left: 280px;
+            padding: 92px 30px 25px;
+            min-height: 100vh;
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .big-card {
             background: white;
             border-radius: 20px;
@@ -391,9 +193,57 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.04);
         }
 
+        /* COURT BANNER */
+        .court-banner {
+            background: linear-gradient(135deg, #1a5d3a 0%, #0d2b1e 100%);
+            color: white;
+            padding: 22px 28px;
+            border-radius: 14px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .court-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .court-banner-icon {
+            width: 54px;
+            height: 54px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .court-banner-text h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .court-banner-text p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+        .court-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* STATS */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 28px;
         }
@@ -406,6 +256,9 @@
             align-items: center;
             border: 1px solid #eef2f0;
             transition: all 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
         }
         .stat-card:hover {
             transform: translateY(-3px);
@@ -425,12 +278,9 @@
             font-weight: 800;
             color: #0d2b1e;
         }
-        .stat-icon {
-            font-size: 34px;
-            color: #cde0d8;
-            opacity: 0.7;
-        }
+        .stat-icon { font-size: 34px; opacity: 0.7; }
 
+        /* CHARTS */
         .charts-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -458,10 +308,7 @@
             align-items: center;
             height: 230px;
         }
-        #statusChart {
-            max-width: 230px;
-            max-height: 210px;
-        }
+        #statusChart { max-width: 230px; max-height: 210px; }
         .status-legend {
             display: flex;
             gap: 18px;
@@ -477,15 +324,10 @@
             color: #5a6e7a;
             font-weight: 500;
         }
-        .legend-color {
-            width: 10px;
-            height: 10px;
-            border-radius: 3px;
-        }
-        .chart-container {
-            height: 230px;
-        }
+        .legend-color { width: 10px; height: 10px; border-radius: 3px; }
+        .chart-container { height: 230px; }
 
+        /* TABLE */
         .table-section {
             background: #f8fafc;
             border-radius: 14px;
@@ -500,12 +342,6 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .table-header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
         .table-header h3 {
             color: #0d2b1e;
             font-size: 16px;
@@ -514,16 +350,11 @@
             align-items: center;
             gap: 10px;
         }
-        .last-updated {
-            font-size: 12px;
-            color: #8a9a8f;
-            font-weight: 400;
-        }
-        .refresh-btn {
+        .view-all-btn {
             background: #0d2b1e;
             color: white;
             border: none;
-            padding: 7px 16px;
+            padding: 8px 18px;
             border-radius: 30px;
             font-size: 12px;
             font-weight: 600;
@@ -532,50 +363,20 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
+            text-decoration: none;
         }
-        .refresh-btn:hover {
+        .view-all-btn:hover {
             background: #1a5d3a;
             transform: translateY(-2px);
-        }
-        .refresh-btn:active {
-            transform: scale(0.95);
-        }
-        .refresh-btn i {
-            transition: transform 0.6s ease;
-        }
-        .refresh-btn.spinning i {
-            animation: spin 0.6s linear;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
 
         .table-container {
             overflow-x: auto;
-            max-height: 420px;
-            overflow-y: auto;
             background: white;
             border-radius: 10px;
             border: 1px solid #eef2f0;
         }
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #f0f2f5;
-            border-radius: 10px;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #1a5d3a;
-            border-radius: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td {
             padding: 12px 14px;
             text-align: left;
@@ -589,10 +390,6 @@
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 2px solid #eef2f0;
         }
         tbody tr:hover { background: #f9fafb; }
 
@@ -604,8 +401,6 @@
             display: inline-block;
         }
         .status-pending { background: #fff4e0; color: #b76e00; }
-        .status-approved { background: #e0f5e8; color: #1a5d3a; }
-        .status-rejected { background: #ffe0e0; color: #dc3545; }
 
         .btn-view {
             background: #0d2b1e;
@@ -620,8 +415,18 @@
             text-decoration: none;
             display: inline-block;
         }
-        .btn-view:hover {
-            background: #1a5d3a;
+        .btn-view:hover { background: #1a5d3a; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8a9a8f;
+        }
+        .empty-state i {
+            font-size: 40px;
+            color: #d4f0df;
+            margin-bottom: 10px;
+            display: block;
         }
 
         .footer {
@@ -633,13 +438,9 @@
             border-top: 1px solid #eef2f0;
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1200px) {
-            .stats-grid { grid-template-columns: repeat(3, 1fr); }
-        }
         @media (max-width: 1024px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .navbar-search { width: 200px; }
+            .charts-row { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
             .sidebar-custom { width: 70px; padding: 16px 10px; }
@@ -648,26 +449,23 @@
             .sidebar-menu a { justify-content: center; padding: 10px; }
             .navbar { left: 70px; padding: 0 16px; height: 60px; }
             .navbar-left .page-title { font-size: 15px; }
-            .navbar-search { display: none; }
             .profile-info { display: none; }
             .profile-trigger { padding: 4px; }
             .main-with-sidebar { margin-left: 70px; padding: 80px 16px 16px; }
             .big-card { padding: 18px; }
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .charts-row { grid-template-columns: 1fr; }
             .stat-number { font-size: 24px; }
+            .court-banner { flex-direction: column; align-items: flex-start; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
             .table-header { flex-direction: column; align-items: flex-start; }
-            .navbar-left .page-title { font-size: 13px; }
-            .navbar-left .page-title i { margin-right: 4px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== SIDEBAR ===== -->
+<!-- SIDEBAR -->
 <div class="sidebar-custom">
     <div class="sidebar-header">
         <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo-img" 
@@ -675,28 +473,21 @@
         <div class="logo-fallback" style="display: none; width: 70px; height: 70px; background: rgba(255,255,255,0.12); border-radius: 50%; margin: 0 auto 12px; align-items: center; justify-content: center; font-size: 28px;">
             <i class="fas fa-landmark"></i>
         </div>
-        <h2>Barangay Sto. Niño</h2>
-        <small>Head Admin Panel</small>
+        <h2>Barangay Sto. Nino</h2>
+        <small>Court 3 Admin</small>
     </div>
     <ul class="sidebar-menu">
-        <li class="active"><a href="{{ url_for('head_admin_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
-        <li><a href="{{ url_for('user_management') }}"><i class="fas fa-users"></i> <span>Users</span></a></li>
-        <li><a href="{{ url_for('admin_management') }}"><i class="fas fa-user-shield"></i> <span>Admins</span></a></li>
-        <li><a href="{{ url_for('head_admin_all_documents') }}"><i class="fas fa-file-alt"></i> <span>Documents</span></a></li>
-        <li><a href="{{ url_for('head_admin_events') }}"><i class="fas fa-calendar-alt"></i> <span>Events</span></a></li>
-        <li><a href="{{ url_for('announcements') }}"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+        <li class="active"><a href="{{ url_for('court3_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
+        <li><a href="{{ url_for('court3_pending') }}"><i class="fas fa-clock"></i> <span>Pending Events</span></a></li>
+        <li><a href="{{ url_for('court3_calendar') }}"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
     </ul>
 </div>
 
-<!-- ===== NAVBAR ===== -->
+<!-- NAVBAR -->
 <nav class="navbar">
     <div class="navbar-left">
         <div class="page-title">
-            <i class="fas fa-chart-pie"></i> Dashboard
-        </div>
-        <div class="navbar-search">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search requests..." id="navSearch">
+            <i class="fas fa-chart-pie"></i> Court 3 Dashboard
         </div>
     </div>
     <div class="navbar-right">
@@ -706,17 +497,17 @@
                     {{ session.fullname[0]|upper if session.fullname else 'A' }}
                 </div>
                 <div class="profile-info">
-                    <span class="name">{{ session.fullname or 'Head Admin' }}</span>
-                    <span class="role">Head Admin</span>
+                    <span class="name">{{ session.fullname or 'Court 3 Admin' }}</span>
+                    <span class="role">Court 3 Admin</span>
                 </div>
                 <i class="fas fa-chevron-down chevron"></i>
             </div>
             <div class="profile-menu">
                 <div class="profile-menu-header">
-                    <div class="menu-name">{{ session.fullname or 'Head Admin' }}</div>
+                    <div class="menu-name">{{ session.fullname or 'Court 3 Admin' }}</div>
                     <div class="menu-email">{{ session.email or 'admin@barangay.gov.ph' }}</div>
                 </div>
-                <a href="{{ url_for('settings') }}">
+                <a href="{{ url_for('sec_admin_settings') }}">
                     <i class="fas fa-user-cog"></i> Profile Settings
                 </a>
                 <div class="divider"></div>
@@ -728,54 +519,61 @@
     </div>
 </nav>
 
-<!-- ===== MAIN CONTENT ===== -->
+<!-- MAIN CONTENT -->
 <div class="main-with-sidebar">
 
     <div class="big-card">
+
+        <!-- COURT BANNER -->
+        <div class="court-banner">
+            <div class="court-banner-left">
+                <div class="court-banner-icon">
+                    <i class="fas fa-tree"></i>
+                </div>
+                <div class="court-banner-text">
+                    <h2>Sampaguita Covered Court</h2>
+                    <p>Court 3 - Event Permit Monitoring</p>
+                </div>
+            </div>
+            <span class="court-badge"><i class="fas fa-map-marker-alt"></i> COURT 3</span>
+        </div>
 
         <!-- STATS -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-info">
-                    <h4>Total Users</h4>
-                    <div class="stat-number">{{ total_users|default(0, true) }}</div>
-                </div>
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Residents</h4>
-                    <div class="stat-number">{{ total_residents|default(0, true) }}</div>
-                </div>
-                <div class="stat-icon"><i class="fas fa-user"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Admins</h4>
-                    <div class="stat-number">{{ total_admins|default(0, true) }}</div>
-                </div>
-                <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Documents</h4>
-                    <div class="stat-number">{{ total_requests|default(0, true) }}</div>
-                </div>
-                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Events</h4>
+                    <h4>Total Events</h4>
                     <div class="stat-number">{{ total_events|default(0, true) }}</div>
                 </div>
-                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-icon" style="color:#1a5d3a;"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+            <a href="{{ url_for('court3_pending') }}" class="stat-card">
+                <div class="stat-info">
+                    <h4>Pending</h4>
+                    <div class="stat-number">{{ pending_events|default(0, true) }}</div>
+                </div>
+                <div class="stat-icon" style="color:#f59e0b;"><i class="fas fa-clock"></i></div>
+            </a>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Approved</h4>
+                    <div class="stat-number">{{ approved_events|default(0, true) }}</div>
+                </div>
+                <div class="stat-icon" style="color:#22c55e;"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Rejected</h4>
+                    <div class="stat-number">{{ rejected_events|default(0, true) }}</div>
+                </div>
+                <div class="stat-icon" style="color:#dc3545;"><i class="fas fa-times-circle"></i></div>
             </div>
         </div>
 
         <!-- CHARTS -->
         <div class="charts-row">
             <div class="chart-box">
-                <h3><i class="fas fa-chart-pie" style="color: #0d2b1e;"></i> Request Status</h3>
+                <h3><i class="fas fa-chart-pie" style="color: #0d2b1e;"></i> Event Status</h3>
                 <div class="chart-container-pie">
                     <canvas id="statusChart"></canvas>
                 </div>
@@ -786,7 +584,7 @@
                 </div>
             </div>
             <div class="chart-box">
-                <h3><i class="fas fa-chart-bar" style="color: #0d2b1e;"></i> Monthly Documents</h3>
+                <h3><i class="fas fa-chart-bar" style="color: #0d2b1e;"></i> Monthly Events</h3>
                 <div class="chart-container">
                     <canvas id="monthlyChart"></canvas>
                 </div>
@@ -796,59 +594,46 @@
         <!-- TABLE -->
         <div class="table-section">
             <div class="table-header">
-                <div class="table-header-left">
-                    <h3><i class="fas fa-clock"></i> Pending Requests</h3>
-                    <span class="last-updated">
-                        <i class="fas fa-sync-alt"></i>
-                        Updated: <span id="lastUpdated">Just now</span>
-                    </span>
-                </div>
-                <button class="refresh-btn" onclick="refreshTable()">
-                    <i class="fas fa-rotate-right"></i> Refresh
-                </button>
+                <h3><i class="fas fa-clock"></i> Pending Events</h3>
+                <a href="{{ url_for('court3_pending') }}" class="view-all-btn">
+                    <i class="fas fa-list"></i> View All
+                </a>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Type</th>
                             <th>Reference</th>
-                            <th>Request/Event</th>
+                            <th>Event Name</th>
                             <th>Applicant</th>
-                            <th>Date</th>
+                            <th>Event Date</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="pendingRequestsTable">
-                        {% if pending_documents or pending_events_list %}
-                            {% for doc in pending_documents %}
+                    <tbody>
+                        {% if pending_events_list %}
+                            {% for event in pending_events_list[:5] %}
                             <tr>
-                                <td><span class="status-badge status-pending">Document</span></td>
-                                <td><strong>{{ doc.reference_number or 'N/A' }}</strong></td>
-                                <td>{{ doc.document_type }}</td>
-                                <td>{{ doc.first_name }} {{ doc.last_name }}</td>
-                                <td>{{ doc.created_at.strftime('%b %d, %Y') if doc.created_at else 'N/A' }}</td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                                <td><a href="{{ url_for('admin_documents') }}" class="btn-view"><i class="fas fa-eye"></i> Review</a></td>
-                            </tr>
-                            {% endfor %}
-                            {% for event in pending_events_list %}
-                            <tr>
-                                <td><span class="status-badge status-pending">Event</span></td>
                                 <td><strong>{{ event.reference_number or 'N/A' }}</strong></td>
                                 <td>{{ event.event_name }}</td>
                                 <td>{{ event.first_name }} {{ event.last_name }}</td>
-                                <td>{{ event.requested_at.strftime('%b %d, %Y') if event.requested_at else 'N/A' }}</td>
+                                <td>{{ event.event_date.strftime('%b %d, %Y') if event.event_date else 'N/A' }}</td>
                                 <td><span class="status-badge status-pending">Pending</span></td>
-                                <td><a href="{{ url_for('admin_events') }}" class="btn-view"><i class="fas fa-eye"></i> Review</a></td>
+                                <td>
+                                    <a href="{{ url_for('court3_pending') }}" class="btn-view">
+                                        <i class="fas fa-eye"></i> Review
+                                    </a>
+                                </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7" style="text-align:center; padding:30px; color:#8a9a8f;">
-                                    <i class="fas fa-check-circle" style="font-size:24px; display:block; margin-bottom:8px;"></i>
-                                    No pending requests
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <p>Walang pending events</p>
+                                    </div>
                                 </td>
                             </tr>
                         {% endif %}
@@ -859,27 +644,24 @@
     </div>
 
     <div class="footer">
-        <p>© 2025 Barangay Sto. Niño, Parañaque City | Head Admin Dashboard</p>
+        <p>2025 Barangay Sto. Nino, Paranaque City | Court 3 - Sampaguita Covered Court Dashboard</p>
     </div>
 </div>
 
 <script>
-    // ===== PROFILE DROPDOWN =====
+    // PROFILE DROPDOWN
     function toggleProfile() {
         document.getElementById('profileDropdown').classList.toggle('open');
     }
-
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('profileDropdown');
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-        }
+        if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
     });
 
-    // ===== CHARTS =====
-    const pendingTotal = Number("{{ pending_total | default(0) }}");
-    const approvedTotal = Number("{{ approved_total | default(0) }}");
-    const rejectedTotal = Number("{{ rejected_total | default(0) }}");
+    // CHARTS
+    const pendingTotal = Number("{{ pending_events | default(0) }}");
+    const approvedTotal = Number("{{ approved_events | default(0) }}");
+    const rejectedTotal = Number("{{ rejected_events | default(0) }}");
 
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
@@ -904,8 +686,15 @@
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
             datasets: [{
-                label: 'Documents',
-                data: [0, 0, 0, 0, 0, 0],
+                label: 'Events',
+                data: [
+                    Number("{{ monthly_data[0] | default(0) }}"),
+                    Number("{{ monthly_data[1] | default(0) }}"),
+                    Number("{{ monthly_data[2] | default(0) }}"),
+                    Number("{{ monthly_data[3] | default(0) }}"),
+                    Number("{{ monthly_data[4] | default(0) }}"),
+                    Number("{{ monthly_data[5] | default(0) }}")
+                ],
                 backgroundColor: '#1a5d3a',
                 borderRadius: 6
             }]
@@ -916,49 +705,6 @@
             scales: { y: { beginAtZero: true, grid: { display: false } } },
             plugins: { legend: { display: false } }
         }
-    });
-
-    function refreshTable() {
-        const btn = document.querySelector('.refresh-btn');
-        btn.classList.add('spinning');
-        setTimeout(() => { location.reload(); }, 600);
-    }
-
-    function updateLastUpdated() {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-PH', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
-        });
-        document.getElementById('lastUpdated').textContent = timeStr;
-    }
-    updateLastUpdated();
-    setInterval(updateLastUpdated, 60000);
-
-    document.getElementById('navSearch').addEventListener('keyup', function(e) {
-        const search = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#pendingRequestsTable tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(search) ? '' : 'none';
-        });
-    });
-
-    document.querySelectorAll('.sidebar-menu a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const oldRipple = this.querySelector('.ripple');
-            if (oldRipple) oldRipple.remove();
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
-            ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
-            this.appendChild(ripple);
-            setTimeout(() => { ripple.remove(); }, 600);
-        });
     });
 </script>
 </body>

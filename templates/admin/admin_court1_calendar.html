@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Court 1 Calendar - Barangay Sto. Nino</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: 68px;
+            background: white;
+            border-bottom: 1px solid #eef2f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 99;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .navbar-left { display: flex; align-items: center; gap: 16px; }
+        .navbar-left .page-title { font-size: 17px; font-weight: 700; color: #0d2b1e; }
+        .navbar-left .page-title i { color: #1a5d3a; margin-right: 8px; }
+        .navbar-right { display: flex; align-items: center; gap: 16px; }
+
+        /* PROFILE DROPDOWN */
+        .profile-dropdown { position: relative; }
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px 6px 6px;
+            border-radius: 50px;
+            background: #f4f8f5;
+            border: 1px solid #eef2f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .profile-trigger:hover { background: #eef8f2; border-color: #d4f0df; }
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a5d3a, #0d2b1e);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .profile-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .profile-info .name { font-size: 13px; font-weight: 600; color: #0d2b1e; }
+        .profile-info .role { font-size: 11px; color: #8a9a8f; font-weight: 500; }
+        .profile-trigger .chevron { font-size: 11px; color: #8a9a8f; transition: transform 0.2s ease; }
+        .profile-dropdown.open .profile-trigger .chevron { transform: rotate(180deg); }
+
+        .profile-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            min-width: 220px;
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        .profile-dropdown.open .profile-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .profile-menu-header {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f3f2;
+            margin-bottom: 6px;
+        }
+        .profile-menu-header .menu-name { font-size: 14px; font-weight: 600; color: #0d2b1e; }
+        .profile-menu-header .menu-email { font-size: 12px; color: #8a9a8f; margin-top: 2px; }
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: #3d5a4a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        .profile-menu a:hover { background: #f4f8f5; color: #1a5d3a; }
+        .profile-menu a i { width: 18px; font-size: 14px; color: #8a9a8f; }
+        .profile-menu a:hover i { color: #1a5d3a; }
+        .profile-menu .divider { height: 1px; background: #f0f3f2; margin: 6px 0; }
+        .profile-menu .logout-link { color: #dc3545; }
+        .profile-menu .logout-link:hover { background: #fff5f5; color: #b91c1c; }
+        .profile-menu .logout-link i { color: #dc3545; }
+
+        /* SIDEBAR */
+        .sidebar-custom {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0d2b1e 0%, #1a5d3a 100%);
+            color: white;
+            padding: 30px 20px;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.08);
+        }
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 25px;
+        }
+        .sidebar-header .logo-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.2);
+            margin-bottom: 12px;
+            background: white;
+            padding: 4px;
+        }
+        .sidebar-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+        .sidebar-header small { font-size: 11px; opacity: 0.6; letter-spacing: 0.5px; }
+
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 18px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            transform: translateX(8px);
+        }
+        .sidebar-menu .active a {
+            background: rgba(255,255,255,0.12);
+            color: white;
+        }
+        .sidebar-menu i { width: 22px; font-size: 15px; }
+
+        /* MAIN CONTENT */
+        .main-with-sidebar {
+            margin-left: 280px;
+            padding: 92px 30px 25px;
+            min-height: 100vh;
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .big-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 30px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .calendar-header h2 {
+            font-size: 20px;
+            color: #0d2b1e;
+            font-weight: 700;
+        }
+        .calendar-header h2 i {
+            color: #1a5d3a;
+            margin-right: 8px;
+        }
+        .legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #5a6e7a;
+            font-weight: 500;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        #calendar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        /* FullCalendar Customization */
+        .fc .fc-toolbar-title {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #0d2b1e !important;
+        }
+        .fc .fc-button {
+            background: #0d2b1e !important;
+            border: none !important;
+            font-weight: 600 !important;
+            font-size: 12px !important;
+            padding: 8px 14px !important;
+            border-radius: 8px !important;
+            text-transform: capitalize !important;
+        }
+        .fc .fc-button:hover { background: #1a5d3a !important; }
+        .fc .fc-button-active { background: #1a5d3a !important; }
+        .fc .fc-daygrid-day-number {
+            color: #0d2b1e !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+        }
+        .fc .fc-col-header-cell-cushion {
+            color: #5a6e7a !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+            text-transform: uppercase !important;
+            padding: 10px 0 !important;
+        }
+        .fc .fc-day-today { background: #f0f9f4 !important; }
+        .fc-event {
+            border: none !important;
+            border-radius: 6px !important;
+            padding: 3px 6px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            background: #1a5d3a !important;
+            color: white !important;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 18px;
+            margin-top: 28px;
+            color: #8a9a8f;
+            font-size: 11px;
+            border-top: 1px solid #eef2f0;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef2f0;
+        }
+        .modal-header h3 { color: #0d2b1e; font-size: 18px; font-weight: 700; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #8a9a8f;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #dc3545; }
+
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f4f8f5;
+            font-size: 13px;
+        }
+        .modal-row .label { color: #8a9a8f; font-weight: 500; }
+        .modal-row .value {
+            color: #0d2b1e;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+        .approved-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #e0f5e8;
+            color: #1a5d3a;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-custom { width: 70px; padding: 16px 10px; }
+            .sidebar-header h2, .sidebar-menu span { display: none; }
+            .sidebar-header .logo-img { width: 45px; height: 45px; }
+            .sidebar-menu a { justify-content: center; padding: 10px; }
+            .navbar { left: 70px; padding: 0 16px; height: 60px; }
+            .profile-info { display: none; }
+            .main-with-sidebar { margin-left: 70px; padding: 80px 16px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar-custom">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo-img" 
+             onerror="this.style.display='none'; this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+        <div class="logo-fallback" style="display: none; width: 70px; height: 70px; background: rgba(255,255,255,0.12); border-radius: 50%; margin: 0 auto 12px; align-items: center; justify-content: center; font-size: 28px;">
+            <i class="fas fa-landmark"></i>
+        </div>
+        <h2>Barangay Sto. Nino</h2>
+        <small>Court 1 Admin</small>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('court1_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
+        <li><a href="{{ url_for('court1_pending') }}"><i class="fas fa-clock"></i> <span>Pending Events</span></a></li>
+        <li class="active"><a href="{{ url_for('court1_calendar') }}"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+    </ul>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="page-title">
+            <i class="fas fa-calendar-alt"></i> Court 1 Calendar
+        </div>
+    </div>
+    <div class="navbar-right">
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-trigger" onclick="toggleProfile()">
+                <div class="profile-avatar">
+                    {{ session.fullname[0]|upper if session.fullname else 'A' }}
+                </div>
+                <div class="profile-info">
+                    <span class="name">{{ session.fullname or 'Court 1 Admin' }}</span>
+                    <span class="role">Court 1 Admin</span>
+                </div>
+                <i class="fas fa-chevron-down chevron"></i>
+            </div>
+            <div class="profile-menu">
+                <div class="profile-menu-header">
+                    <div class="menu-name">{{ session.fullname or 'Court 1 Admin' }}</div>
+                    <div class="menu-email">{{ session.email or 'admin@barangay.gov.ph' }}</div>
+                </div>
+                <a href="{{ url_for('sec_admin_settings') }}">
+                    <i class="fas fa-user-cog"></i> Profile Settings
+                </a>
+                <div class="divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main-with-sidebar">
+    <div class="big-card">
+        <div class="calendar-header">
+            <h2><i class="fas fa-calendar-alt"></i> Approved Events - Court 1</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #1a5d3a;"></div> Approved Event
+                </div>
+            </div>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <div class="footer">
+        <p>2025 Barangay Sto. Nino, Paranaque City | Court 1 Calendar</p>
+    </div>
+</div>
+
+<!-- EVENT MODAL (View Only) -->
+<div class="modal-overlay" id="eventModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Event Details</h3>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    // PROFILE DROPDOWN
+    function toggleProfile() {
+        document.getElementById('profileDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('profileDropdown');
+        if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+    });
+
+    // CALENDAR
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
+            },
+            height: 'auto',
+            events: '/api/court1/events',
+            eventClick: function(info) {
+                showEventDetails(info.event);
+            }
+        });
+        calendar.render();
+    });
+
+    // SHOW EVENT DETAILS (VIEW ONLY)
+    function showEventDetails(event) {
+        const props = event.extendedProps;
+
+        document.getElementById('modalTitle').innerText = event.title;
+
+        let html = `
+            <div class="modal-row"><span class="label">Reference:</span><span class="value">${props.reference || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Applicant:</span><span class="value">${props.organizer || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Date:</span><span class="value">${event.startStr || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Time:</span><span class="value">${props.start_time || ''} - ${props.end_time || ''}</span></div>
+            <div class="modal-row"><span class="label">Venue:</span><span class="value">${props.venue || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Attendees:</span><span class="value">${props.attendees || 0}</span></div>
+            <div class="modal-row"><span class="label">Purpose:</span><span class="value">${props.purpose || 'N/A'}</span></div>
+            <div class="modal-row">
+                <span class="label">Status:</span>
+                <span class="value"><span class="approved-badge">APPROVED</span></span>
+            </div>
+        `;
+        document.getElementById('modalBody').innerHTML = html;
+        document.getElementById('eventModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('eventModal').classList.remove('active');
+    }
+
+    document.getElementById('eventModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+</body>
+</html>
+{% endblock %}

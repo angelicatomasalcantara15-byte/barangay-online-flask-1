@@ -1,0 +1,882 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Events - Court 3 (Sampaguita)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: 68px;
+            background: white;
+            border-bottom: 1px solid #eef2f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 99;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .navbar-left { display: flex; align-items: center; gap: 16px; }
+        .navbar-left .page-title { font-size: 17px; font-weight: 700; color: #0d2b1e; }
+        .navbar-left .page-title i { color: #f59e0b; margin-right: 8px; }
+        .navbar-right { display: flex; align-items: center; gap: 16px; }
+
+        /* PROFILE DROPDOWN */
+        .profile-dropdown { position: relative; }
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px 6px 6px;
+            border-radius: 50px;
+            background: #f4f8f5;
+            border: 1px solid #eef2f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .profile-trigger:hover { background: #eef8f2; border-color: #d4f0df; }
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a5d3a, #0d2b1e);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .profile-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .profile-info .name { font-size: 13px; font-weight: 600; color: #0d2b1e; }
+        .profile-info .role { font-size: 11px; color: #8a9a8f; font-weight: 500; }
+        .profile-trigger .chevron { font-size: 11px; color: #8a9a8f; transition: transform 0.2s ease; }
+        .profile-dropdown.open .profile-trigger .chevron { transform: rotate(180deg); }
+
+        .profile-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            min-width: 220px;
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        .profile-dropdown.open .profile-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .profile-menu-header {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f3f2;
+            margin-bottom: 6px;
+        }
+        .profile-menu-header .menu-name { font-size: 14px; font-weight: 600; color: #0d2b1e; }
+        .profile-menu-header .menu-email { font-size: 12px; color: #8a9a8f; margin-top: 2px; }
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: #3d5a4a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        .profile-menu a:hover { background: #f4f8f5; color: #1a5d3a; }
+        .profile-menu a i { width: 18px; font-size: 14px; color: #8a9a8f; }
+        .profile-menu a:hover i { color: #1a5d3a; }
+        .profile-menu .divider { height: 1px; background: #f0f3f2; margin: 6px 0; }
+        .profile-menu .logout-link { color: #dc3545; }
+        .profile-menu .logout-link:hover { background: #fff5f5; color: #b91c1c; }
+        .profile-menu .logout-link i { color: #dc3545; }
+
+        /* SIDEBAR */
+        .sidebar-custom {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0d2b1e 0%, #1a5d3a 100%);
+            color: white;
+            padding: 30px 20px;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.08);
+        }
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 25px;
+        }
+        .sidebar-header .logo-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.2);
+            margin-bottom: 12px;
+            background: white;
+            padding: 4px;
+        }
+        .sidebar-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+        .sidebar-header small { font-size: 11px; opacity: 0.6; letter-spacing: 0.5px; }
+
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 18px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            transform: translateX(8px);
+        }
+        .sidebar-menu .active a {
+            background: rgba(255,255,255,0.12);
+            color: white;
+        }
+        .sidebar-menu i { width: 22px; font-size: 15px; }
+
+        /* MAIN CONTENT */
+        .main-with-sidebar {
+            margin-left: 280px;
+            padding: 92px 30px 25px;
+            min-height: 100vh;
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .big-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 30px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header h2 {
+            font-size: 22px;
+            color: #0d2b1e;
+            font-weight: 700;
+        }
+        .page-header h2 i { color: #f59e0b; margin-right: 10px; }
+        .count-badge {
+            background: #fff4e0;
+            color: #b76e00;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* TABLE */
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eef2f0;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f0f3f2;
+            vertical-align: middle;
+        }
+        th {
+            background: #f8fafc;
+            color: #5a6e7a;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        tbody tr:hover { background: #f9fafb; }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            background: #fff4e0;
+            color: #b76e00;
+        }
+
+        .btn-review {
+            background: #0d2b1e;
+            color: white;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-review:hover { background: #1a5d3a; transform: translateY(-2px); }
+
+        .btn-file {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-file:hover { background: #1e3a8a; transform: translateY(-2px); }
+
+        .no-file {
+            color: #b0b8b4;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8a9a8f;
+        }
+        .empty-state i {
+            font-size: 60px;
+            color: #d4f0df;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .empty-state h3 {
+            color: #0d2b1e;
+            font-size: 18px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .empty-state p { font-size: 14px; }
+
+        .footer {
+            text-align: center;
+            padding: 18px;
+            margin-top: 28px;
+            color: #8a9a8f;
+            font-size: 11px;
+            border-top: 1px solid #eef2f0;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef2f0;
+        }
+        .modal-header h3 { color: #0d2b1e; font-size: 18px; font-weight: 700; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #8a9a8f;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+            background: #fef2f2;
+            transform: rotate(90deg);
+        }
+
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f4f8f5;
+            font-size: 13px;
+        }
+        .modal-row .label { color: #8a9a8f; font-weight: 500; }
+        .modal-row .value {
+            color: #0d2b1e;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        /* FILE PREVIEW SECTION */
+        .file-preview-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #eef2f0;
+        }
+        .file-preview-section h4 {
+            font-size: 13px;
+            color: #0d2b1e;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file-preview-section h4 i { color: #1e40af; }
+
+        .btn-view-file-inline {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-view-file-inline:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        /* FILE VIEWER MODAL */
+        .file-viewer-modal {
+            max-width: 900px !important;
+        }
+        .file-preview-container {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .file-preview-container img {
+            max-width: 100%;
+            max-height: 550px;
+            border-radius: 8px;
+            border: 1px solid #eef0f2;
+        }
+        .file-preview-container iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #eef0f2;
+            border-radius: 8px;
+        }
+        .file-preview-container .download-btn {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: #0d2b1e;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .file-preview-container .download-btn:hover {
+            background: #1a5d3a;
+            transform: translateY(-2px);
+        }
+
+        .remarks-box {
+            margin-top: 16px;
+        }
+        .remarks-box label {
+            display: block;
+            font-size: 12px;
+            color: #5a6e7a;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .remarks-box textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #eef2f0;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 70px;
+        }
+        .remarks-box textarea:focus {
+            outline: none;
+            border-color: #1a5d3a;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-approve { background: #1a5d3a; color: white; }
+        .btn-approve:hover { background: #0d2b1e; }
+        .btn-reject { background: #fee2e2; color: #dc3545; }
+        .btn-reject:hover { background: #fecaca; }
+
+        @media (max-width: 768px) {
+            .sidebar-custom { width: 70px; padding: 16px 10px; }
+            .sidebar-header h2, .sidebar-menu span { display: none; }
+            .sidebar-header .logo-img { width: 45px; height: 45px; }
+            .sidebar-menu a { justify-content: center; padding: 10px; }
+            .navbar { left: 70px; padding: 0 16px; height: 60px; }
+            .profile-info { display: none; }
+            .main-with-sidebar { margin-left: 70px; padding: 80px 16px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar-custom">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo-img" 
+             onerror="this.style.display='none'; this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+        <div class="logo-fallback" style="display: none; width: 70px; height: 70px; background: rgba(255,255,255,0.12); border-radius: 50%; margin: 0 auto 12px; align-items: center; justify-content: center; font-size: 28px;">
+            <i class="fas fa-landmark"></i>
+        </div>
+        <h2>Barangay Sto. Nino</h2>
+        <small>Court 3 Admin</small>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('court3_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
+        <li class="active"><a href="{{ url_for('court3_pending') }}"><i class="fas fa-clock"></i> <span>Pending Events</span></a></li>
+        <li><a href="{{ url_for('court3_calendar') }}"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+    </ul>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="page-title">
+            <i class="fas fa-clock"></i> Pending Events
+        </div>
+    </div>
+    <div class="navbar-right">
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-trigger" onclick="toggleProfile()">
+                <div class="profile-avatar">
+                    {{ session.fullname[0]|upper if session.fullname else 'A' }}
+                </div>
+                <div class="profile-info">
+                    <span class="name">{{ session.fullname or 'Court 3 Admin' }}</span>
+                    <span class="role">Court 3 Admin</span>
+                </div>
+                <i class="fas fa-chevron-down chevron"></i>
+            </div>
+            <div class="profile-menu">
+                <div class="profile-menu-header">
+                    <div class="menu-name">{{ session.fullname or 'Court 3 Admin' }}</div>
+                    <div class="menu-email">{{ session.email or 'admin@barangay.gov.ph' }}</div>
+                </div>
+                <a href="{{ url_for('sec_admin_settings') }}">
+                    <i class="fas fa-user-cog"></i> Profile Settings
+                </a>
+                <div class="divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main-with-sidebar">
+    <div class="big-card">
+        <div class="page-header">
+            <h2><i class="fas fa-clock"></i> Pending Events - Sampaguita Covered Court</h2>
+            <span class="count-badge">
+                <i class="fas fa-hourglass-half"></i> {{ pending_events|length }} pending
+            </span>
+        </div>
+
+        {% if pending_events %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Event Name</th>
+                        <th>Applicant</th>
+                        <th>Event Date</th>
+                        <th>Time</th>
+                        <th>Attendees</th>
+                        <th>Requirement</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in pending_events %}
+                    <tr>
+                        <td><strong>{{ event.reference_number or 'N/A' }}</strong></td>
+                        <td>{{ event.event_name }}</td>
+                        <td>{{ event.first_name }} {{ event.last_name }}</td>
+                        <td>{{ event.event_date if event.event_date else 'N/A' }}</td>
+                        <td>{{ event.start_time }} - {{ event.end_time }}</td>
+                        <td>{{ event.estimated_attendees or 0 }}</td>
+                        <td>
+                            {% if event.requirements_file %}
+                                <button class="btn-file" data-file-name="{{ event.requirements_file|e }}">
+                                    <i class="fas fa-file-alt"></i> View File
+                                </button>
+                            {% else %}
+                                <span class="no-file">No file</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="status-badge">Pending</span></td>
+                        <td>
+                            <button class="btn-review" data-event-id="{{ event.id }}">
+                                <i class="fas fa-eye"></i> Review
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h3>No Pending Events</h3>
+            <p>All events have been reviewed.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p>2025 Barangay Sto. Nino, Paranaque City | Court 3 - Sampaguita Covered Court Pending Events</p>
+    </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="eventModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Event Details</h3>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="modalBody"></div>
+
+        <!-- FILE PREVIEW BUTTON (inline sa modal) -->
+        <div class="file-preview-section" id="filePreviewSection" style="display:none;">
+            <h4><i class="fas fa-paperclip"></i> Attached Requirement</h4>
+            <button class="btn-view-file-inline" id="viewFileBtn">
+                <i class="fas fa-file-alt"></i> View Uploaded File
+            </button>
+        </div>
+        
+        <div class="remarks-box">
+            <label>Remarks (optional)</label>
+            <textarea id="remarksInput" placeholder="Enter reason for approval or rejection..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-reject" onclick="updateStatus('rejected')">
+                <i class="fas fa-times"></i> Reject
+            </button>
+            <button class="btn-approve" onclick="updateStatus('approved')">
+                <i class="fas fa-check"></i> Approve
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FILE VIEWER MODAL -->
+<div class="modal-overlay" id="fileViewerModal">
+    <div class="modal-box file-viewer-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-alt"></i> Uploaded Requirement</h3>
+            <button class="modal-close" onclick="closeFileViewer()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="file-preview-container" id="filePreviewContainer">
+            <p>Loading file...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Events data as JSON script tag -->
+<script id="events-data" type="application/json">
+{{ pending_events | tojson | safe }}
+</script>
+
+<script>
+    // PARSE EVENTS DATA
+    const EVENTS_DATA = JSON.parse(document.getElementById('events-data').textContent);
+
+    // PROFILE DROPDOWN
+    function toggleProfile() {
+        document.getElementById('profileDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('profileDropdown');
+        if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+    });
+
+    let currentEventId = null;
+    let currentFileName = null;
+
+    // REVIEW BUTTON LISTENERS
+    document.querySelectorAll('.btn-review').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const eventId = parseInt(this.getAttribute('data-event-id'));
+            const event = EVENTS_DATA.find(function(e) { return e.id === eventId; });
+            if (event) openModal(event);
+        });
+    });
+
+    // VIEW FILE BUTTON LISTENERS (sa table)
+    document.querySelectorAll('.btn-file').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const fileName = this.getAttribute('data-file-name');
+            viewFile(fileName);
+        });
+    });
+
+    // OPEN MODAL (Review)
+    function openModal(event) {
+        currentEventId = event.id;
+        document.getElementById('modalTitle').innerText = event.event_name;
+        document.getElementById('remarksInput').value = '';
+
+        let eventDate = event.event_date || 'N/A';
+        if (eventDate && eventDate.includes('T')) {
+            eventDate = eventDate.split('T')[0];
+        }
+        // Format to "Oct 01, 2026"
+        if (eventDate && eventDate !== 'N/A') {
+            const d = new Date(eventDate);
+            if (!isNaN(d)) {
+                eventDate = d.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: '2-digit' 
+                });
+            }
+        }
+
+        let html = `
+            <div class="modal-row"><span class="label">Reference:</span><span class="value">${event.reference_number || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Applicant:</span><span class="value">${event.first_name} ${event.last_name}</span></div>
+            <div class="modal-row"><span class="label">Email:</span><span class="value">${event.email || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Contact:</span><span class="value">${event.contact_number || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Date:</span><span class="value">${eventDate}</span></div>
+            <div class="modal-row"><span class="label">Time:</span><span class="value">${event.start_time || ''} - ${event.end_time || ''}</span></div>
+            <div class="modal-row"><span class="label">Venue:</span><span class="value">${event.venue || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Attendees:</span><span class="value">${event.estimated_attendees || 0}</span></div>
+            <div class="modal-row"><span class="label">Purpose:</span><span class="value">${event.purpose || 'N/A'}</span></div>
+            <div class="modal-row"><span class="label">Description:</span><span class="value">${event.event_description || 'N/A'}</span></div>
+        `;
+        document.getElementById('modalBody').innerHTML = html;
+
+        // Show file preview section if may file
+        const fileSection = document.getElementById('filePreviewSection');
+        const viewFileBtn = document.getElementById('viewFileBtn');
+        
+        if (event.requirements_file) {
+            currentFileName = event.requirements_file;
+            fileSection.style.display = 'block';
+            
+            // Remove old listener, add new one
+            const newBtn = viewFileBtn.cloneNode(true);
+            viewFileBtn.parentNode.replaceChild(newBtn, viewFileBtn);
+            newBtn.addEventListener('click', function() {
+                viewFile(currentFileName);
+            });
+        } else {
+            currentFileName = null;
+            fileSection.style.display = 'none';
+        }
+
+        document.getElementById('eventModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('eventModal').classList.remove('active');
+        currentEventId = null;
+        currentFileName = null;
+    }
+
+    // VIEW FILE (Image / PDF / Other)
+    function viewFile(filename) {
+        const modal = document.getElementById('fileViewerModal');
+        const preview = document.getElementById('filePreviewContainer');
+        modal.classList.add('active');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        const fileUrl = `/uploads/${filename}`;
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            preview.innerHTML = `
+                <img src="${fileUrl}" alt="Requirement">
+                <br>
+                <a href="${fileUrl}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i> Open in New Tab
+                </a>
+            `;
+        } else if (fileExt === 'pdf') {
+            preview.innerHTML = `
+                <iframe src="${fileUrl}"></iframe>
+                <br>
+                <a href="${fileUrl}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+            `;
+        } else {
+            preview.innerHTML = `
+                <p><i class="fas fa-file" style="font-size:48px;color:#6b7a72;"></i></p>
+                <p><strong>${filename}</strong></p>
+                <a href="${fileUrl}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i> Download File
+                </a>
+            `;
+        }
+    }
+
+    function closeFileViewer() {
+        document.getElementById('fileViewerModal').classList.remove('active');
+        document.getElementById('filePreviewContainer').innerHTML = '<p>Loading file...</p>';
+    }
+
+    // UPDATE STATUS — COURT 3 ENDPOINT
+    function updateStatus(status) {
+        if (!currentEventId) return;
+        
+        const remarks = document.getElementById('remarksInput').value.trim();
+
+        fetch(`/api/court3/event/${currentEventId}/update-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status, remarks: remarks })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Event ${status} successfully!`);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            alert('Network error: ' + err);
+        });
+    }
+
+    // CLOSE MODAL ON OUTSIDE CLICK
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>
+{% endblock %}

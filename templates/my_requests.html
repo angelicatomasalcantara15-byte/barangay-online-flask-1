@@ -20,6 +20,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral-50); min-height: 100vh; }
 
+        /* ===== PAGE TRANSITION (FADE IN/OUT) ===== */
+        body {
+            animation: fadeInPage 0.4s ease-in;
+        }
+        @keyframes fadeInPage {
+            from { 
+                opacity: 0; 
+                transform: translateY(8px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        body.fade-out {
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
         /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px; height: 100vh; background: linear-gradient(180deg, var(--primary-800), var(--primary-600));
@@ -271,20 +291,20 @@
             .stats-grid { grid-template-columns: 1fr; }
         }
         /* ===== BADGE NOTIFICATION ===== */
-.badge-notification {
-    background: #dc3545;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+        .badge-notification {
+            background: #dc3545;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -450,7 +470,7 @@
                                     <i class="fas fa-info-circle"></i> {{ req.status|replace('_', ' ')|title }}
                                 {% endif %}
                             </span>
-                            <button class="btn-view" onclick="showDocumentModal('{{ req.document_type }}', '{{ req.reference_number }}', '{{ req.created_at.strftime('%b %d, %Y') if req.created_at else 'N/A' }}', '{{ req.status }}')"><i class="fas fa-eye"></i> <span class="translatable">View</span></button>
+                            <button class="btn-view" onclick="showDocumentModal('{{ req.document_type }}', '{{ req.reference_number }}', '{{ req.created_at.strftime('%b %d, %Y') if req.created_at else 'N/A' }}', '{{ req.status }}', '{{ req.purpose or 'N/A' }}', '{{ req.notes or 'N/A' }}')"><i class="fas fa-eye"></i> <span class="translatable">View</span></button>
                         </div>
                     </div>
                     {% endfor %}
@@ -499,7 +519,7 @@
                                     <i class="fas fa-info-circle"></i> {{ req.status|replace('_', ' ')|title }}
                                 {% endif %}
                             </span>
-                            <button class="btn-view" onclick="showEventModal('{{ req.event_name }}', '{{ req.reference_number }}', '{{ req.event_date.strftime('%b %d, %Y') if req.event_date else 'N/A' }}', '{{ req.status }}')"><i class="fas fa-eye"></i> <span class="translatable">View</span></button>
+                            <button class="btn-view" onclick="showEventModal('{{ req.event_name }}', '{{ req.reference_number }}', '{{ req.event_date.strftime('%b %d, %Y') if req.event_date else 'N/A' }}', '{{ req.status }}', '{{ req.start_time }} - {{ req.end_time }}', '{{ req.venue or 'N/A' }}', '{{ req.purpose or 'N/A' }}', '{{ req.event_description or 'N/A' }}')"><i class="fas fa-eye"></i> <span class="translatable">View</span></button>
                         </div>
                     </div>
                     {% endfor %}
@@ -527,6 +547,8 @@
                 <p><strong class="translatable">Document Type:</strong> <span id="modalDocType"></span></p>
                 <p><strong class="translatable">Reference No:</strong> <span id="modalDocRef"></span></p>
                 <p><strong class="translatable">Date Requested:</strong> <span id="modalDocDate"></span></p>
+                <p><strong class="translatable">Purpose:</strong> <span id="modalDocPurpose"></span></p>
+                <p><strong class="translatable">Notes:</strong> <span id="modalDocNotes"></span></p>
                 <p><strong class="translatable">Status:</strong> <span id="modalDocStatus"></span></p>
             </div>
         </div>
@@ -543,6 +565,10 @@
                 <p><strong class="translatable">Event Name:</strong> <span id="modalEventName"></span></p>
                 <p><strong class="translatable">Reference No:</strong> <span id="modalEventRef"></span></p>
                 <p><strong class="translatable">Event Date:</strong> <span id="modalEventDate"></span></p>
+                <p><strong class="translatable">Event Time:</strong> <span id="modalEventTime"></span></p>
+                <p><strong class="translatable">Venue:</strong> <span id="modalEventVenue"></span></p>
+                <p><strong class="translatable">Purpose:</strong> <span id="modalEventPurpose"></span></p>
+                <p><strong class="translatable">Description:</strong> <span id="modalEventDescription"></span></p>
                 <p><strong class="translatable">Status:</strong> <span id="modalEventStatus"></span></p>
             </div>
         </div>
@@ -571,6 +597,23 @@
                     hamburger.style.display = 'none';
                     document.getElementById('sidebar').classList.remove('open');
                 }
+            });
+        });
+
+        // ===== SMOOTH PAGE TRANSITION (SIDEBAR LINKS) =====
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip kung naka-active na (same page) o walang href
+                if (this.classList.contains('active') || !href || href === '#') return;
+                
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
             });
         });
 
@@ -616,6 +659,7 @@
                 'Apply for Permit': 'Apply for Permit',
                 'My Requests': 'My Requests',
                 'Events Calendar': 'Events Calendar',
+                'Announcements': 'Announcements',
                 'Settings': 'Settings',
                 'Logout': 'Logout',
                 'Track the status of your document requests and event permits': 'Track the status of your document requests and event permits',
@@ -640,7 +684,12 @@
                 'Date Requested:': 'Date Requested:',
                 'Status:': 'Status:',
                 'Event Name:': 'Event Name:',
-                'Event Date:': 'Event Date:'
+                'Event Date:': 'Event Date:',
+                'Event Time:': 'Event Time:',
+                'Venue:': 'Venue:',
+                'Purpose:': 'Purpose:',
+                'Notes:': 'Notes:',
+                'Description:': 'Description:'
             },
             'tl': {
                 'Dashboard': 'Dashboard',
@@ -648,6 +697,7 @@
                 'Apply for Permit': 'Mag-apply ng Permit',
                 'My Requests': 'Aking mga Request',
                 'Events Calendar': 'Kalendaryo ng mga Kaganapan',
+                'Announcements': 'Mga Anunsyo',
                 'Settings': 'Settings',
                 'Logout': 'Mag-logout',
                 'Track the status of your document requests and event permits': 'Tingnan ang status ng iyong mga dokumento at permit',
@@ -672,7 +722,12 @@
                 'Date Requested:': 'Petsa ng Request:',
                 'Status:': 'Status:',
                 'Event Name:': 'Pangalan ng Kaganapan:',
-                'Event Date:': 'Petsa ng Kaganapan:'
+                'Event Date:': 'Petsa ng Kaganapan:',
+                'Event Time:': 'Oras ng Kaganapan:',
+                'Venue:': 'Lugar:',
+                'Purpose:': 'Layunin:',
+                'Notes:': 'Mga Tala:',
+                'Description:': 'Paglalarawan:'
             }
         };
 
@@ -706,10 +761,12 @@
         });
 
         // ===== FUNCTIONS PARA SA DOCUMENT =====
-        function showDocumentModal(type, ref, date, status) {
+        function showDocumentModal(type, ref, date, status, purpose, notes) {
             document.getElementById('modalDocType').textContent = type;
             document.getElementById('modalDocRef').textContent = ref;
             document.getElementById('modalDocDate').textContent = date;
+            document.getElementById('modalDocPurpose').textContent = purpose || 'N/A';
+            document.getElementById('modalDocNotes').textContent = notes || 'N/A';
             document.getElementById('modalDocStatus').textContent = status;
             document.getElementById('documentModal').classList.remove('hidden');
         }
@@ -719,10 +776,14 @@
         }
 
         // ===== FUNCTIONS PARA SA EVENT =====
-        function showEventModal(name, ref, date, status) {
+        function showEventModal(name, ref, date, status, time, venue, purpose, description) {
             document.getElementById('modalEventName').textContent = name;
             document.getElementById('modalEventRef').textContent = ref;
             document.getElementById('modalEventDate').textContent = date;
+            document.getElementById('modalEventTime').textContent = time || 'N/A';
+            document.getElementById('modalEventVenue').textContent = venue || 'N/A';
+            document.getElementById('modalEventPurpose').textContent = purpose || 'N/A';
+            document.getElementById('modalEventDescription').textContent = description || 'N/A';
             document.getElementById('modalEventStatus').textContent = status;
             document.getElementById('eventModal').classList.remove('hidden');
         }

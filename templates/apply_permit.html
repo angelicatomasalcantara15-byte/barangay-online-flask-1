@@ -24,6 +24,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral-50); min-height: 100vh; }
 
+        /* ===== PAGE TRANSITION (FADE IN/OUT) ===== */
+        body {
+            animation: fadeInPage 0.4s ease-in;
+        }
+        @keyframes fadeInPage {
+            from { 
+                opacity: 0; 
+                transform: translateY(8px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        body.fade-out {
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
         /* SIDEBAR */
         .sidebar {
             width: 260px; height: 100vh; background: linear-gradient(180deg, var(--primary-800), var(--primary-600));
@@ -52,13 +72,11 @@
         .sidebar-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
         .sidebar-nav a.active { background: rgba(255,255,255,0.2); color: white; font-weight: 600; }
         .sidebar-nav a.active i { color: white; }
-        .sidebar-nav .logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; color: white; }
-        .sidebar-nav .logout:hover { background: rgba(255,0,0,0.2); color: white; }
 
         /* MAIN CONTENT */
         .main-content { margin-left: 260px; padding: 30px 40px; min-height: 100vh; }
 
-        /* ===== PAGE HEADER CARD ===== */
+        /* PAGE HEADER */
         .page-header-card {
             background: white; border-radius: 16px; padding: 20px 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--neutral-100);
@@ -70,7 +88,7 @@
         .page-header-card h1 i { color: var(--primary-500); }
         .page-header-card h1 small { font-size: 0.85rem; font-weight: 400; color: var(--neutral-500); display: block; margin-top: 4px; }
 
-        /* ===== USER BADGE + DROPDOWN ===== */
+        /* USER BADGE */
         .user-badge-container { display: flex; align-items: center; gap: 10px; position: relative; }
         .user-badge {
             display: flex; align-items: center; gap: 10px;
@@ -90,7 +108,6 @@
         .user-badge .user-info .role { font-size: 0.7rem; color: var(--neutral-500); margin-top: 1px; }
         .user-badge .chevron { font-size: 0.65rem; color: var(--neutral-500); margin-left: 2px; }
 
-        /* ===== USER DROPDOWN MENU ===== */
         .user-menu {
             display: none; position: absolute; top: calc(100% + 8px); right: 0;
             background: white; border: 1px solid var(--neutral-100);
@@ -115,7 +132,7 @@
         .user-menu-item.logout-item:hover { background: #fee; }
         .user-menu-item.logout-item i { color: #c42828; }
 
-        /* ===== LANGUAGE SWITCHER ===== */
+        /* LANGUAGE SWITCHER */
         .lang-switcher-btn {
             background: var(--neutral-50); border: 1px solid var(--neutral-100);
             padding: 6px 12px; border-radius: 20px; cursor: pointer;
@@ -205,7 +222,7 @@
         .form-group textarea { min-height: 80px; resize: vertical; }
         .form-group input.error, .form-group select.error { border-color: var(--accent-600); background: #fef2f2; }
 
-        /* Availability */
+        /* Availability Status */
         .availability-status {
             margin-top: 10px; padding: 12px 16px; border-radius: 10px;
             font-size: 13px; font-weight: 500; display: none;
@@ -215,6 +232,7 @@
         .availability-status.available { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .availability-status.unavailable { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
         .availability-status.checking { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .availability-status.pending-warning { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
 
         /* File upload */
         .file-input-wrapper input[type="file"] {
@@ -394,22 +412,12 @@
             .page-header-card h1 { font-size: 1.3rem; }
             .page-header-card { flex-direction: column; align-items: flex-start; }
             .user-menu { right: -10px; }
+        }
 
-            /* ===== BADGE NOTIFICATION ===== */
-.badge-notification {
-    background: #dc3545;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+        .badge-notification {
+            background: #dc3545; color: white; font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 10px; min-width: 18px; text-align: center;
+            margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
         }
     </style>
 </head>
@@ -437,7 +445,7 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
 
-        <!-- PAGE HEADER CARD -->
+        <!-- PAGE HEADER -->
         <div class="page-header-card">
             <h1>
                 <i class="fas fa-calendar-check"></i>
@@ -445,10 +453,7 @@
                 <small class="translatable">Submit a community event permit application</small>
             </h1>
 
-            <!-- LANGUAGE SWITCHER + USER BADGE + DROPDOWN -->
             <div class="user-badge-container">
-                
-                <!-- LANGUAGE SWITCHER -->
                 <div class="lang-switcher" style="position: relative;">
                     <button onclick="toggleLangMenu(event)" class="lang-switcher-btn">
                         <i class="fas fa-globe"></i> 
@@ -461,7 +466,6 @@
                     </div>
                 </div>
 
-                <!-- USER BADGE -->
                 <div class="user-badge" onclick="toggleUserMenu(event)">
                     <div class="avatar">{{ (session.fullname or 'R')[0]|upper }}</div>
                     <div class="user-info">
@@ -471,7 +475,6 @@
                     <i class="fas fa-chevron-down chevron"></i>
                 </div>
 
-                <!-- USER DROPDOWN MENU -->
                 <div id="userMenu" class="user-menu">
                     <div class="user-menu-header">
                         <div class="name">{{ session.fullname or 'Resident' }}</div>
@@ -484,7 +487,6 @@
                         <i class="fas fa-sign-out-alt"></i> <span class="translatable">Logout</span>
                     </a>
                 </div>
-
             </div>
         </div>
 
@@ -597,13 +599,31 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="purpose"><i class="fas fa-align-left"></i> Purpose of Event</label>
-                            <textarea name="purpose" id="purpose" rows="3" placeholder="Describe the purpose of your event..."></textarea>
+                            <label for="purpose"><i class="fas fa-align-left"></i> Purpose of Event <span class="required">*</span></label>
+                            <textarea name="purpose" id="purpose" rows="3" placeholder="Describe the purpose of your event..." required></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECTION 5: FILE UPLOAD -->
+                <!-- SECTION 5: CONTACT PERSON -->
+                <div class="form-section-title"><i class="fas fa-address-book"></i> Contact Person</div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="contactPerson"><i class="fas fa-user"></i> Full Name <span class="required">*</span></label>
+                            <input type="text" name="contact_person" id="contactPerson" placeholder="e.g., Juan Dela Cruz" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="contactPhone"><i class="fas fa-phone"></i> Phone Number <span class="required">*</span></label>
+                            <input type="tel" name="contact_phone" id="contactPhone" placeholder="e.g., 09171234567" pattern="[0-9+\-\s]{7,15}" required>
+                            <small style="display:block; color: var(--neutral-500); font-size:0.7rem; margin-top:4px;">Format: 09171234567</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: FILE UPLOAD -->
                 <div class="form-section-title"><i class="fas fa-upload"></i> Supporting Document</div>
                 <div class="form-group">
                     <div class="file-input-wrapper">
@@ -612,7 +632,7 @@
                     </div>
                 </div>
 
-                <!-- SECTION 6: TERMS -->
+                <!-- SECTION 7: TERMS -->
                 <div class="terms-section" id="termsSection">
                     <div class="terms-header" onclick="toggleTerms()">
                         <i class="fas fa-file-contract"></i>
@@ -763,6 +783,23 @@
             document.getElementById('eventDate').min = minDate.toISOString().split('T')[0];
         });
 
+        // ===== SMOOTH PAGE TRANSITION (SIDEBAR LINKS) =====
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip kung naka-active na (same page) o walang href
+                if (this.classList.contains('active') || !href || href === '#') return;
+                
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
+        });
+
         // ===== USER MENU DROPDOWN =====
         function toggleUserMenu(event) {
             if (event) event.stopPropagation();
@@ -805,6 +842,7 @@
                 'Apply for Permit': 'Apply for Permit',
                 'My Requests': 'My Requests',
                 'Events Calendar': 'Events Calendar',
+                'Announcements': 'Announcements',
                 'Settings': 'Settings',
                 'Logout': 'Logout',
                 'Submit a community event permit application': 'Submit a community event permit application',
@@ -816,6 +854,7 @@
                 'Apply for Permit': 'Mag-apply ng Permit',
                 'My Requests': 'Aking mga Request',
                 'Events Calendar': 'Kalendaryo ng mga Kaganapan',
+                'Announcements': 'Mga Anunsyo',
                 'Settings': 'Settings',
                 'Logout': 'Mag-logout',
                 'Submit a community event permit application': 'Magsumite ng aplikasyon para sa permit ng kaganapan',
@@ -867,19 +906,34 @@
             }
         }
 
+        // ===== FORM ELEMENTS =====
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const eventDateInput = document.getElementById('eventDate');
+        const venueInput = document.getElementById('venue');
+        const attendeesInput = document.getElementById('estimatedAttendees');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusDiv = document.getElementById('availabilityStatus');
+        const messageSpan = document.getElementById('availabilityMessage');
+
+        // ===== UPDATE SUBMIT BUTTON STATE =====
+        function updateSubmitButton() {
+            const termsChecked = termsCheckbox.checked;
+            const attendeesValid = attendeesInput.value && !attendeesInput.classList.contains('error');
+            const slotOk = statusDiv.classList.contains('available') || statusDiv.classList.contains('pending-warning');
+            submitBtn.disabled = !(slotOk && termsChecked && attendeesValid);
+        }
+
         // ===== TERMS CHECKBOX VALIDATION =====
-        document.getElementById('termsCheckbox').addEventListener('change', function() {
+        termsCheckbox.addEventListener('change', function() {
             const wrapper = document.getElementById('termsCheckboxWrapper');
             const errorMsg = document.getElementById('termsErrorMsg');
-            const submitBtn = document.getElementById('submitBtn');
-            const statusDiv = document.getElementById('availabilityStatus');
 
             if (this.checked) {
                 wrapper.classList.remove('error');
                 errorMsg.classList.remove('visible');
-                if (statusDiv.classList.contains('available')) {
-                    submitBtn.disabled = false;
-                }
+                updateSubmitButton();
             } else {
                 wrapper.classList.add('error');
                 errorMsg.classList.add('visible');
@@ -888,11 +942,6 @@
         });
 
         // ===== TIME VALIDATION =====
-        const startTimeInput = document.getElementById('startTime');
-        const endTimeInput = document.getElementById('endTime');
-        const eventDateInput = document.getElementById('eventDate');
-        const venueInput = document.getElementById('venue');
-
         function timeToMinutes(timeStr) {
             if (!timeStr) return null;
             const parts = timeStr.split(':');
@@ -908,9 +957,6 @@
         function validateTimeRange() {
             const start = startTimeInput.value;
             const end = endTimeInput.value;
-            const statusDiv = document.getElementById('availabilityStatus');
-            const messageSpan = document.getElementById('availabilityMessage');
-            const submitBtn = document.getElementById('submitBtn');
 
             startTimeInput.classList.remove('error');
             endTimeInput.classList.remove('error');
@@ -933,7 +979,6 @@
                 submitBtn.disabled = true;
                 return false;
             }
-
             if (start >= end) {
                 startTimeInput.classList.add('error');
                 endTimeInput.classList.add('error');
@@ -943,7 +988,6 @@
                 submitBtn.disabled = true;
                 return false;
             }
-
             return true;
         }
 
@@ -965,7 +1009,6 @@
         });
 
         // ===== ATTENDEES VALIDATION =====
-        const attendeesInput = document.getElementById('estimatedAttendees');
         attendeesInput.addEventListener('input', function() {
             const val = parseInt(this.value, 10);
             if (this.value && (isNaN(val) || val < 1 || val > 300)) {
@@ -973,18 +1016,16 @@
             } else {
                 this.classList.remove('error');
             }
+            updateSubmitButton();
         });
 
-        // ===== AVAILABILITY CHECK =====
+        // ===== AVAILABILITY CHECK (HARD BLOCK / SOFT WARNING) =====
         let availabilityCheckTimeout = null;
         function checkAvailability() {
             const date = eventDateInput.value;
             const startTime = startTimeInput.value;
             const endTime = endTimeInput.value;
             const venue = venueInput.value;
-            const statusDiv = document.getElementById('availabilityStatus');
-            const messageSpan = document.getElementById('availabilityMessage');
-            const submitBtn = document.getElementById('submitBtn');
 
             if (availabilityCheckTimeout) clearTimeout(availabilityCheckTimeout);
 
@@ -1011,18 +1052,39 @@
                     }
 
                     const data = await response.json();
+                    console.log('🔍 Availability response:', data);
 
-                    if (data.available) {
+                    if (data.status === 'available') {
+                        // ✅ GREEN — Available
                         statusDiv.className = 'availability-status visible available';
                         statusDiv.style.display = 'flex';
                         messageSpan.innerHTML = '<i class="fas fa-check-circle"></i> This time slot is available!';
-                        const termsChecked = document.getElementById('termsCheckbox').checked;
-                        const attendeesValid = attendeesInput.value && !attendeesInput.classList.contains('error');
-                        submitBtn.disabled = !(termsChecked && attendeesValid);
+                        updateSubmitButton();
+
+                    } else if (data.status === 'pending_conflict') {
+                        // ⚠️ YELLOW — Soft warning (pwede pa ring mag-submit)
+                        statusDiv.className = 'availability-status visible pending-warning';
+                        statusDiv.style.display = 'flex';
+                        messageSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.message || 'May pending permit sa slot na ito. Pwede pa ring mag-submit pero may risk.');
+                        updateSubmitButton();
+
+                    } else if (data.status === 'blocked') {
+                        // ❌ RED — Hard block
+                        statusDiv.className = 'availability-status visible unavailable';
+                        statusDiv.style.display = 'flex';
+                        messageSpan.innerHTML = '<i class="fas fa-times-circle"></i> ' + (data.message || 'This time slot is already taken by an approved event.');
+                        submitBtn.disabled = true;
+
+                    } else if (data.status === 'error') {
+                        statusDiv.className = 'availability-status visible unavailable';
+                        statusDiv.style.display = 'flex';
+                        messageSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.message || 'Error checking availability.');
+                        submitBtn.disabled = true;
+
                     } else {
                         statusDiv.className = 'availability-status visible unavailable';
                         statusDiv.style.display = 'flex';
-                        messageSpan.innerHTML = '<i class="fas fa-times-circle"></i> ' + (data.message || 'This time slot is already taken.');
+                        messageSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unknown response.';
                         submitBtn.disabled = true;
                     }
                 } catch (error) {
@@ -1098,19 +1160,25 @@
                 return false;
             }
 
-            const termsChecked = document.getElementById('termsCheckbox').checked;
+            const termsChecked = termsCheckbox.checked;
             if (!termsChecked) {
                 alert('⚠️ Please agree to the Terms and Conditions before submitting.');
                 return false;
             }
 
-            const statusDiv = document.getElementById('availabilityStatus');
-            if (!statusDiv.classList.contains('available')) {
+            const slotOk = statusDiv.classList.contains('available') || statusDiv.classList.contains('pending-warning');
+            if (!slotOk) {
                 alert('⚠️ This time slot is not available.');
                 return false;
             }
 
-            const submitBtn = document.getElementById('submitBtn');
+            // Confirm kung may pending conflict
+            if (statusDiv.classList.contains('pending-warning')) {
+                if (!confirm('⚠️ May pending permit sa slot na ito. Gusto mo pa ring mag-submit? Maaaring ma-conflict kapag na-approve ang naunang pending.')) {
+                    return false;
+                }
+            }
+
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
             submitBtn.disabled = true;
 
@@ -1124,7 +1192,9 @@
                     body: JSON.stringify({
                         event_name: data.event_name,
                         event_description: data.event_description,
-                        purpose: data.purpose || '',
+                        purpose: data.purpose,
+                        contact_person: data.contact_person,
+                        contact_phone: data.contact_phone,
                         event_date: data.event_date,
                         start_time: data.start_time,
                         end_time: data.end_time,
@@ -1142,7 +1212,7 @@
                     statusDiv.className = 'availability-status';
                     statusDiv.style.display = 'none';
                     submitBtn.disabled = true;
-                    document.getElementById('termsCheckbox').checked = false;
+                    termsCheckbox.checked = false;
                     document.getElementById('termsCheckboxWrapper').classList.remove('error');
                     document.getElementById('termsErrorMsg').classList.remove('visible');
                     attendeesInput.classList.remove('error');
@@ -1154,7 +1224,7 @@
 
                     if (termsOpen) toggleTerms();
                 } else {
-                    alert('Error: ' + (result.message || 'Something went wrong.'));
+                    alert('Error: ' + (result.error || result.message || 'Something went wrong.'));
                 }
             } catch (error) {
                 console.error('Submission error:', error);

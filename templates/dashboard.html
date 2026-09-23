@@ -21,6 +21,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral-50); min-height: 100vh; }
 
+        /* ===== PAGE TRANSITION (FADE IN/OUT) ===== */
+        body {
+            animation: fadeInPage 0.4s ease-in;
+        }
+        @keyframes fadeInPage {
+            from { 
+                opacity: 0; 
+                transform: translateY(8px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        body.fade-out {
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
         /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px; height: 100vh; background: linear-gradient(180deg, var(--primary-800), var(--primary-600));
@@ -49,6 +69,20 @@
         .sidebar-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
         .sidebar-nav a.active { background: rgba(255,255,255,0.2); color: white; font-weight: 600; }
         .sidebar-nav a.active i { color: white; }
+
+        /* ===== SETTINGS LINK - NAKA-HIDE BY DEFAULT ===== */
+        #sidebarSettingsLink {
+            display: none;
+            align-items: center;
+        }
+        #sidebarSettingsLink.visible {
+            display: flex;
+            animation: fadeInSlide 0.3s ease;
+        }
+        @keyframes fadeInSlide {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
         /* ===== MAIN CONTENT ===== */
         .main-content { margin-left: 260px; padding: 30px 40px; min-height: 100vh; }
@@ -260,6 +294,11 @@
             <a href="{{ url_for('my_requests') }}"><i class="fas fa-list"></i> <span class="translatable">My Requests</span></a>
             <a href="{{ url_for('events') }}"><i class="fas fa-calendar-alt"></i> <span class="translatable">Events Calendar</span></a>
             <a href="{{ url_for('user_announcements') }}"><i class="fas fa-bullhorn"></i> <span class="translatable">Announcements</span></a>
+            
+            <!-- ⬇️ SETTINGS LINK - NAKA-HIDE, LALABAS LANG KAPAG NASA SETTINGS PAGE ⬇️ -->
+            <a href="{{ url_for('settings') }}" id="sidebarSettingsLink" class="{% if request.endpoint == 'settings' %}active{% endif %}">
+                <i class="fas fa-cog"></i> <span class="translatable">Settings</span>
+            </a>
         </nav>
     </aside>
 
@@ -385,6 +424,32 @@
                     document.getElementById('sidebar').classList.remove('open');
                 }
             });
+
+            // ===== CHECK KUNG NASA SETTINGS PAGE PARA IPAKITA YUNG SETTINGS LINK SA SIDEBAR =====
+            const settingsLink = document.getElementById('sidebarSettingsLink');
+            if (settingsLink) {
+                const isOnSettingsPage = window.location.pathname.includes('settings');
+                if (isOnSettingsPage) {
+                    settingsLink.classList.add('visible');
+                }
+            }
+        });
+
+        // ===== SMOOTH PAGE TRANSITION (SIDEBAR LINKS) =====
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip kung naka-active na (same page) o walang href
+                if (this.classList.contains('active') || !href || href === '#') return;
+                
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
         });
 
         // ===== USER MENU DROPDOWN =====
@@ -468,16 +533,28 @@
             const dict = translations[lang] || translations['en'];
             
             document.querySelectorAll('.translatable').forEach(el => {
-                const key = el.getAttribute('data-original-text') || el.textContent.trim();
-                if (!el.getAttribute('data-original-text')) {
+                let key = el.getAttribute('data-original-text');
+                
+                if (!key) {
+                    key = el.textContent.trim();
                     el.setAttribute('data-original-text', key);
                 }
-                if (dict[key]) {
-                    el.textContent = dict[key];
+                
+                let translated = null;
+                for (const [dictKey, dictValue] of Object.entries(dict)) {
+                    if (dictKey.toLowerCase() === key.toLowerCase()) {
+                        translated = dictValue;
+                        break;
+                    }
+                }
+                
+                if (translated) {
+                    el.textContent = translated;
                 }
             });
         }
 
+        // ===== AUTO-APPLY SA PAGE LOAD =====
         document.addEventListener('DOMContentLoaded', function() {
             const savedLang = localStorage.getItem('language') || 'en';
             document.getElementById('currentLangText').textContent = savedLang === 'tl' ? 'Tagalog' : 'English';

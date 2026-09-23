@@ -1,0 +1,983 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Documents · Head Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes modalFadeOut {
+            from { opacity: 1; transform: scale(1) translateY(0); }
+            to { opacity: 0; transform: scale(0.9) translateY(20px); }
+        }
+        @keyframes rowSlideIn {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0d2b1e, #1a5d3a);
+            color: white;
+            padding: 30px 20px;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.08);
+        }
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 24px;
+        }
+        .sidebar-header .logo-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.15);
+            margin-bottom: 12px;
+            background: white;
+            padding: 4px;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-header .logo-img:hover {
+            transform: rotate(-10deg) scale(1.05);
+        }
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .sidebar-header small {
+            font-size: 11px;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 18px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .sidebar-menu a .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: #6bc48e;
+            border-radius: 0 4px 4px 0;
+            transition: height 0.3s ease;
+        }
+        .sidebar-menu a:hover::before,
+        .sidebar-menu .active a::before {
+            height: 24px;
+        }
+        .sidebar-menu a::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleX(0);
+            width: 3px;
+            height: 20px;
+            background: #6bc48e;
+            border-radius: 4px 0 0 4px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .sidebar-menu .active a::after {
+            transform: translateY(-50%) scaleX(1);
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            transform: translateX(8px) scale(1.02);
+        }
+        .sidebar-menu a:active {
+            transform: scale(0.95);
+        }
+        .sidebar-menu .active a {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            box-shadow: inset 0 0 30px rgba(107, 196, 142, 0.08);
+            animation: popIn 0.3s ease;
+        }
+        .sidebar-menu i { width: 22px; font-size: 15px; transition: transform 0.3s ease; }
+        .sidebar-menu a:hover i { transform: scale(1.15); }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: 68px;
+            background: white;
+            border-bottom: 1px solid #eef2f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 99;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .navbar-left .page-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0d2b1e;
+        }
+        .navbar-left .page-title i {
+            color: #1a5d3a;
+            margin-right: 8px;
+        }
+
+        /* ===== PROFILE DROPDOWN ===== */
+        .profile-dropdown { position: relative; }
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px 6px 6px;
+            border-radius: 50px;
+            background: #f4f8f5;
+            border: 1px solid #eef2f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .profile-trigger:hover {
+            background: #eef8f2;
+            border-color: #d4f0df;
+        }
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a5d3a, #0d2b1e);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .profile-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .profile-info .name { font-size: 13px; font-weight: 600; color: #0d2b1e; }
+        .profile-info .role { font-size: 11px; color: #8a9a8f; font-weight: 500; }
+        .profile-trigger .chevron { font-size: 11px; color: #8a9a8f; transition: transform 0.2s ease; }
+        .profile-dropdown.open .profile-trigger .chevron { transform: rotate(180deg); }
+
+        .profile-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            min-width: 220px;
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        .profile-dropdown.open .profile-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .profile-menu-header {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f3f2;
+            margin-bottom: 6px;
+        }
+        .profile-menu-header .menu-name { font-size: 14px; font-weight: 600; color: #0d2b1e; }
+        .profile-menu-header .menu-email { font-size: 12px; color: #8a9a8f; margin-top: 2px; }
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: #3d5a4a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        .profile-menu a:hover { background: #f4f8f5; color: #1a5d3a; }
+        .profile-menu a i { width: 18px; font-size: 14px; color: #8a9a8f; }
+        .profile-menu a:hover i { color: #1a5d3a; }
+        .profile-menu .divider { height: 1px; background: #f0f3f2; margin: 6px 0; }
+        .profile-menu .logout-link { color: #dc3545; }
+        .profile-menu .logout-link:hover { background: #fff5f5; color: #b91c1c; }
+        .profile-menu .logout-link i { color: #dc3545; }
+        .profile-menu .logout-link:hover i { color: #b91c1c; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-with-sidebar {
+            margin-left: 280px;
+            padding: 92px 30px 25px;
+            min-height: 100vh;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .big-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 30px;
+            border: 1px solid #eef2f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+
+        /* ===== FILTERS ===== */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 8px 14px;
+            border: 1px solid #eef2f0;
+            border-radius: 8px;
+            font-size: 13px;
+            background: #f8f9fa;
+            outline: none;
+            font-family: inherit;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            border-color: #1a5d3a;
+            box-shadow: 0 0 0 3px rgba(26,93,58,0.1);
+        }
+        .filter-bar input { width: 220px; }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            overflow-x: auto;
+            max-height: 520px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid #eef2f0;
+        }
+        .table-container::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-container::-webkit-scrollbar-track { background: #f0f2f5; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: #1a5d3a; border-radius: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f8f9fa;
+            color: #6b7a72;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 2px solid #eef0f2;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f4f6f8;
+            color: #1a1a2e;
+            vertical-align: middle;
+        }
+        tbody tr {
+            transition: background 0.2s ease;
+            animation: rowSlideIn 0.3s ease backwards;
+        }
+        tbody tr:nth-child(1) { animation-delay: 0.05s; }
+        tbody tr:nth-child(2) { animation-delay: 0.08s; }
+        tbody tr:nth-child(3) { animation-delay: 0.11s; }
+        tbody tr:nth-child(4) { animation-delay: 0.14s; }
+        tbody tr:nth-child(5) { animation-delay: 0.17s; }
+        tbody tr:hover { background: #fafbfc; }
+
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        /* ===== BUTTONS ===== */
+        .btn-doc {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-doc:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30,64,175,0.3);
+        }
+        .btn-view-details {
+            background: #0d2b1e;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-view-details:hover {
+            background: #1a5d3a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13,43,30,0.3);
+        }
+
+        .no-file {
+            color: #b0b8b4;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #8a9a8f;
+        }
+        .empty-state i {
+            font-size: 48px;
+            color: #cde0d8;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .empty-state h4 { color: #1a1a2e; margin-bottom: 4px; }
+
+        .footer {
+            text-align: center;
+            padding: 18px;
+            margin-top: 24px;
+            color: #8a9a8f;
+            font-size: 11px;
+            border-top: 1px solid #eef2f0;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 750px;
+            width: 92%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.25);
+        }
+        .modal-box.closing {
+            animation: modalFadeOut 0.25s ease forwards;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        .modal-header h3 {
+            color: #0d2b1e;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-header h3 i { color: #1a5d3a; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            transition: 0.25s;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+            background: #fef2f2;
+            transform: rotate(90deg);
+        }
+
+        .modal-doc-preview {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .modal-doc-preview img {
+            max-width: 100%;
+            max-height: 550px;
+            border-radius: 8px;
+            border: 1px solid #eef0f2;
+        }
+        .modal-doc-preview iframe {
+            width: 100%;
+            height: 550px;
+            border: 1px solid #eef0f2;
+            border-radius: 8px;
+        }
+        .modal-doc-preview .download-btn {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #0d2b1e;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .modal-doc-preview .download-btn:hover {
+            background: #1a5d3a;
+            transform: translateY(-2px);
+        }
+
+        /* ===== VIEW GRID ===== */
+        .view-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 28px;
+        }
+        .view-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f3f2;
+        }
+        .view-item .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a9a8f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .view-item .value {
+            font-size: 15px;
+            font-weight: 500;
+            color: #0d2b1e;
+        }
+        .view-item.full-width { grid-column: 1 / -1; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sidebar { width: 72px; padding: 16px 10px; }
+            .sidebar-header h2, .sidebar-menu span { display: none; }
+            .sidebar-header .logo-img { width: 44px; height: 44px; }
+            .sidebar-menu a { justify-content: center; padding: 10px; }
+            .navbar { left: 72px; padding: 0 16px; height: 60px; }
+            .navbar-left .page-title { font-size: 15px; }
+            .profile-info { display: none; }
+            .profile-trigger { padding: 4px; }
+            .main-with-sidebar { margin-left: 72px; padding: 80px 16px 16px; }
+            .big-card { padding: 18px; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-bar input { width: 100%; }
+            .view-grid { grid-template-columns: 1fr; gap: 12px; }
+            .modal-box { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .big-card { padding: 16px; }
+            .btn-doc, .btn-view-details { font-size: 10px; padding: 4px 10px; }
+            .navbar-left .page-title { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo-img" 
+             onerror="this.style.display='none'; this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+        <div class="logo-fallback" style="display: none; width: 70px; height: 70px; background: rgba(255,255,255,0.12); border-radius: 50%; margin: 0 auto 12px; align-items: center; justify-content: center; font-size: 28px;">
+            <i class="fas fa-landmark"></i>
+        </div>
+        <h2>Barangay Sto. Niño</h2>
+        <small>Head Admin Panel</small>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('head_admin_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
+        <li><a href="{{ url_for('user_management') }}"><i class="fas fa-users"></i> <span>Users</span></a></li>
+        <li><a href="{{ url_for('admin_management') }}"><i class="fas fa-user-shield"></i> <span>Admins</span></a></li>
+        <li class="active"><a href="{{ url_for('head_admin_all_documents') }}"><i class="fas fa-file-alt"></i> <span>Documents</span></a></li>
+        <li><a href="{{ url_for('head_admin_events') }}"><i class="fas fa-calendar-alt"></i> <span>Events</span></a></li>
+        <li><a href="{{ url_for('announcements') }}"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+    </ul>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="page-title">
+            <i class="fas fa-file-alt"></i> All Document Requests
+        </div>
+    </div>
+    <div class="navbar-right">
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-trigger" onclick="toggleProfile()">
+                <div class="profile-avatar">
+                    {{ session.fullname[0]|upper if session.fullname else 'A' }}
+                </div>
+                <div class="profile-info">
+                    <span class="name">{{ session.fullname or 'Head Admin' }}</span>
+                    <span class="role">Head Admin</span>
+                </div>
+                <i class="fas fa-chevron-down chevron"></i>
+            </div>
+            <div class="profile-menu">
+                <div class="profile-menu-header">
+                    <div class="menu-name">{{ session.fullname or 'Head Admin' }}</div>
+                    <div class="menu-email">{{ session.email or 'admin@barangay.gov.ph' }}</div>
+                </div>
+                <a href="{{ url_for('settings') }}">
+                    <i class="fas fa-user-cog"></i> Profile Settings
+                </a>
+                <div class="divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main-with-sidebar">
+
+    <div class="big-card">
+
+        <!-- FILTERS -->
+        <div class="filter-bar">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="statusFilter" onchange="filterTable()">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="typeFilter" onchange="filterTable()">
+                    <option value="all">All Types</option>
+                    <option value="clearance">Barangay Clearance</option>
+                    <option value="indigency">Certificate of Indigency</option>
+                    <option value="proof_residency">Proof of Residency</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search name or reference..." onkeyup="filterTable()">
+            </div>
+            <div>
+                <span style="font-size:13px;color:#6b7a72;">Total: <strong id="totalCount">{{ documents|length }}</strong></span>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Reference</th>
+                        <th>Applicant</th>
+                        <th>Document Type</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th>Document</th>
+                        <th style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="docTable">
+                    {% for doc in documents %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ doc.reference_number or 'N/A' }}</strong></td>
+                        <td>{{ doc.first_name }} {{ doc.last_name }}</td>
+                        <td>{{ doc.document_type }}</td>
+                        <td>{{ doc.created_at.strftime('%b %d, %Y') if doc.created_at else 'N/A' }}</td>
+                        <td>
+                            <span class="status-badge 
+                                {% if doc.status == 'pending' %}status-pending
+                                {% elif doc.status == 'approved' %}status-approved
+                                {% else %}status-rejected{% endif %}">
+                                {{ doc.status|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if doc.document_path %}
+                                <button class="btn-doc" data-document-path="{{ doc.document_path|e }}">
+                                    <i class="fas fa-file-alt"></i> View File
+                                </button>
+                            {% else %}
+                                <span class="no-file">No file</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;">
+                            <button class="btn-view-details" data-document-id="{{ doc.id }}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if documents|length == 0 %}
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <h4>No Documents Found</h4>
+                <p>No document applications have been submitted yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Barangay Sto. Niño, Parañaque City — Head Admin Panel</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DOCUMENT VIEW MODAL ===== -->
+<div id="docModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-alt"></i> Uploaded Document</h3>
+            <button class="modal-close" onclick="closeDocModal()">&times;</button>
+        </div>
+        <div class="modal-doc-preview" id="docPreview">
+            <p>Loading document...</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DETAILS MODAL ===== -->
+<div id="detailsModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-alt"></i> Document Details</h3>
+            <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+        </div>
+        <div id="detailsBody">
+            <p>Loading details...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Keep Jinja expressions out of inline JavaScript handlers.
+    document.querySelectorAll('.btn-doc').forEach(button => {
+        button.addEventListener('click', function() {
+            viewDocument(this.dataset.documentPath);
+        });
+    });
+
+    document.querySelectorAll('.btn-view-details').forEach(button => {
+        button.addEventListener('click', function() {
+            viewDetails(this.dataset.documentId);
+        });
+    });
+
+    // ===== PROFILE DROPDOWN =====
+    function toggleProfile() {
+        document.getElementById('profileDropdown').classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('profileDropdown');
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    // ===== FILTER TABLE =====
+    function filterTable() {
+        const status = document.getElementById('statusFilter').value;
+        const type = document.getElementById('typeFilter').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#docTable tr');
+        let count = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const statusText = row.querySelector('.status-badge')?.textContent.toLowerCase() || '';
+            const typeText = row.querySelectorAll('td')[3]?.textContent.toLowerCase() || '';
+
+            const matchStatus = status === 'all' || statusText.includes(status);
+            const matchType = type === 'all' || typeText.includes(type.toLowerCase());
+            const matchSearch = text.includes(search);
+
+            if (matchStatus && matchType && matchSearch) {
+                row.style.display = '';
+                count++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('totalCount').textContent = count;
+    }
+
+    // ===== VIEW DOCUMENT =====
+    function viewDocument(filename) {
+        const modal = document.getElementById('docModal');
+        const preview = document.getElementById('docPreview');
+        modal.classList.add('active');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        const fileUrl = `/uploads/${filename}`;
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            preview.innerHTML = `<img src="${fileUrl}" alt="Document">`;
+        } else if (fileExt === 'pdf') {
+            preview.innerHTML = `
+                <iframe src="${fileUrl}"></iframe>
+                <br><br>
+                <a href="${fileUrl}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+            `;
+        } else {
+            preview.innerHTML = `
+                <p><i class="fas fa-file" style="font-size:48px;color:#6b7a72;"></i></p>
+                <p><strong>${filename}</strong></p>
+                <a href="${fileUrl}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i> Download File
+                </a>
+            `;
+        }
+    }
+
+    function closeDocModal() {
+        document.getElementById('docModal').classList.remove('active');
+    }
+
+    // ===== VIEW DETAILS =====
+    function viewDetails(docId) {
+        const modal = document.getElementById('detailsModal');
+        const body = document.getElementById('detailsBody');
+        modal.classList.add('active');
+        body.innerHTML = '<p>Loading details...</p>';
+        
+        fetch(`/admin/document/${docId}/details`)
+            .then(response => response.json())
+            .then(doc => {
+                const docTypeMap = {
+                    'clearance': 'Barangay Clearance',
+                    'indigency': 'Certificate of Indigency',
+                    'proof_residency': 'Proof of Residency'
+                };
+                
+                let statusClass = 'status-pending';
+                if (doc.status === 'approved') statusClass = 'status-approved';
+                else if (doc.status === 'rejected') statusClass = 'status-rejected';
+                
+                body.innerHTML = `
+                    <div class="view-grid">
+                        <div class="view-item">
+                            <span class="label">Reference Number</span>
+                            <span class="value">${doc.reference_number || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Status</span>
+                            <span class="value"><span class="status-badge ${statusClass}">${(doc.status || 'PENDING').toUpperCase()}</span></span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Document Type</span>
+                            <span class="value">${docTypeMap[doc.document_type] || doc.document_type || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Date Submitted</span>
+                            <span class="value">${doc.created_at || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Applicant Name</span>
+                            <span class="value">${doc.given_name || ''} ${doc.surname || ''}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Contact Number</span>
+                            <span class="value">${doc.contact_no || 'N/A'}</span>
+                        </div>
+                        <div class="view-item full-width">
+                            <span class="label">Address</span>
+                            <span class="value">${doc.address || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Civil Status</span>
+                            <span class="value">${doc.civil_status || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Age</span>
+                            <span class="value">${doc.age || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Date of Birth</span>
+                            <span class="value">${doc.dob || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Place of Birth</span>
+                            <span class="value">${doc.place_of_birth || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Purpose</span>
+                            <span class="value">${doc.purpose || 'N/A'}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Date Signed</span>
+                            <span class="value">${doc.signature_date || 'N/A'}</span>
+                        </div>
+                        ${doc.admin_remarks ? `
+                        <div class="view-item full-width">
+                            <span class="label">Admin Remarks</span>
+                            <span class="value">${doc.admin_remarks}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            })
+            .catch(error => {
+                body.innerHTML = `<p style="color:red;">Error loading details: ${error.message}</p>`;
+            });
+    }
+
+    function closeDetailsModal() {
+        document.getElementById('detailsModal').classList.remove('active');
+    }
+
+    // ===== CLOSE MODAL ON OUTSIDE CLICK =====
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+
+    // ===== SIDEBAR CLICK RIPPLE EFFECT =====
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const oldRipple = this.querySelector('.ripple');
+            if (oldRipple) oldRipple.remove();
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => { ripple.remove(); }, 600);
+        });
+    });
+</script>
+
+</body>
+</html>
+{% endblock %}

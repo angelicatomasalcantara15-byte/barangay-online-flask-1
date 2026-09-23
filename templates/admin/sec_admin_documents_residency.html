@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Documents · Documents Admin</title>
+    <title>Proof of Residency · Documents Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -196,22 +196,95 @@
         .status-approved { background: #d1fae5; color: #065f46; }
         .status-rejected { background: #fee2e2; color: #991b1b; }
 
-        .btn-action {
-            border: none; padding: 6px 14px; border-radius: 30px;
-            cursor: pointer; font-size: 11px; font-weight: 600;
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin: 2px; display: inline-flex; align-items: center; gap: 5px;
+        /* ===== ACTION BUTTONS (NEW DESIGN) ===== */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: nowrap;
         }
-        .btn-action:hover { transform: translateY(-2px) scale(1.04); }
-        .btn-action:active { transform: scale(0.95); }
 
-        .btn-doc { background: #1e40af; color: white; }
-        .btn-doc:hover { background: #1e3a8a; box-shadow: 0 4px 12px rgba(30,64,175,0.3); }
-        .btn-view-details { background: #0d2b1e; color: white; }
-        .btn-view-details:hover { background: #1a5d3a; box-shadow: 0 4px 12px rgba(13,43,30,0.3); }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
+            min-width: 76px;
+            letter-spacing: 0.2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
 
-        .no-file { color: #b0b8b4; font-size: 11px; font-weight: 500; }
+        .btn-action i {
+            font-size: 11px;
+        }
 
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-action:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        /* Button Colors */
+        .btn-view {
+            background: #0d2b1e;
+            color: white;
+        }
+        .btn-view:hover {
+            background: #1a5d3a;
+            box-shadow: 0 4px 12px rgba(13,43,30,0.35);
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        .btn-approve:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            box-shadow: 0 4px 12px rgba(34,197,94,0.4);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .btn-reject:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 4px 12px rgba(220,53,69,0.4);
+        }
+
+        .btn-doc {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+        }
+        .btn-doc:hover {
+            background: linear-gradient(135deg, #2563eb, #1e3a8a);
+            box-shadow: 0 4px 12px rgba(30,64,175,0.35);
+        }
+
+        .no-file {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #b0b8b4;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 7px 14px;
+        }
+
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center; padding: 50px 20px; color: #8a9a8f;
         }
@@ -294,7 +367,61 @@
         }
         .view-item.full-width { grid-column: 1 / -1; }
 
+        /* ===== APPROVE/REJECT MODAL ===== */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: #0d2b1e; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .form-group label i { color: #1a5d3a; margin-right: 8px; width: 16px; }
+        .form-group textarea {
+            width: 100%; padding: 12px 16px;
+            border: 2px solid #eef2f0; border-radius: 10px;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            background: #f8fafc; outline: none;
+            transition: all 0.25s ease;
+            resize: vertical; min-height: 100px; color: #0d2b1e;
+        }
+        .form-group textarea:focus {
+            border-color: #1a5d3a; background: white;
+            box-shadow: 0 0 0 3px rgba(26,107,66,0.1);
+        }
+
+        .modal-actions {
+            display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;
+        }
+        .modal-btn {
+            padding: 11px 28px; border: none; border-radius: 10px;
+            cursor: pointer; font-weight: 600; font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-btn.approve { background: #22c55e; color: white; }
+        .modal-btn.approve:hover { background: #16a34a; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(34,197,94,0.35); }
+        .modal-btn.reject { background: #dc3545; color: white; }
+        .modal-btn.reject:hover { background: #b91c1c; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(220,53,69,0.35); }
+        .modal-btn.cancel { background: #f0f2f5; color: #5a6e7a; }
+        .modal-btn.cancel:hover { background: #e2e6ea; transform: translateY(-2px); }
+
+        /* ===== TOAST ===== */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
         /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .btn-action {
+                min-width: 68px;
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+        }
         @media (max-width: 768px) {
             .sidebar-custom { width: 70px; padding: 16px 10px; }
             .sidebar-header h2, .sidebar-menu span { display: none; }
@@ -310,10 +437,14 @@
             .modal-box { padding: 20px; }
             .view-grid { grid-template-columns: 1fr; gap: 10px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
+            .modal-actions { flex-direction: column; }
+            .modal-btn { width: 100%; justify-content: center; }
+            .action-buttons { flex-wrap: wrap; gap: 4px; }
+            .btn-action { min-width: 60px; font-size: 10px; padding: 5px 8px; }
         }
         @media (max-width: 480px) {
             .big-card { padding: 16px; }
-            .btn-action { font-size: 10px; padding: 4px 10px; }
+            .btn-action { font-size: 9px; padding: 4px 8px; min-width: 52px; }
             .navbar-left .page-title { font-size: 13px; }
         }
     </style>
@@ -333,10 +464,10 @@
     </div>
     <ul class="sidebar-menu">
         <li><a href="{{ url_for('sec_admin_dashboard') }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
-        <li class="active"><a href="{{ url_for('admin_documents') }}"><i class="fas fa-file-alt"></i> <span>All Documents</span></a></li>
+        <li><a href="{{ url_for('admin_documents') }}"><i class="fas fa-file-alt"></i> <span>All Documents</span></a></li>
         <li><a href="{{ url_for('admin_documents_clearance') }}"><i class="fas fa-file-contract"></i> <span>Barangay Clearance</span></a></li>
         <li><a href="{{ url_for('admin_documents_indigency') }}"><i class="fas fa-file-medical"></i> <span>Certificate of Indigency</span></a></li>
-        <li><a href="{{ url_for('admin_documents_residency') }}"><i class="fas fa-home"></i> <span>Proof of Residency</span></a></li>
+        <li class="active"><a href="{{ url_for('admin_documents_residency') }}"><i class="fas fa-home"></i> <span>Proof of Residency</span></a></li>
         <li><a href="{{ url_for('admin_activity_logs') }}"><i class="fas fa-history"></i> <span>Activity Logs</span></a></li>
     </ul>
 </div>
@@ -345,11 +476,11 @@
 <nav class="navbar">
     <div class="navbar-left">
         <div class="page-title">
-            <i class="fas fa-file-alt"></i> All Documents
+            <i class="fas fa-home"></i> Proof of Residency
         </div>
         <div class="navbar-search">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search documents..." id="navSearch">
+            <input type="text" placeholder="Search residency..." id="navSearch">
         </div>
     </div>
     <div class="navbar-right">
@@ -409,7 +540,6 @@
                         <th>#</th>
                         <th>Reference</th>
                         <th>Applicant</th>
-                        <th>Document Type</th>
                         <th>Date Submitted</th>
                         <th>Status</th>
                         <th>Document</th>
@@ -422,12 +552,6 @@
                         <td>{{ loop.index }}</td>
                         <td><strong>{{ doc.reference_number or 'N/A' }}</strong></td>
                         <td>{{ doc.first_name }} {{ doc.last_name }}</td>
-                        <td>
-                            {% if doc.document_type == 'clearance' %}Barangay Clearance
-                            {% elif doc.document_type == 'indigency' %}Certificate of Indigency
-                            {% elif doc.document_type == 'proof_residency' %}Proof of Residency
-                            {% else %}{{ doc.document_type }}{% endif %}
-                        </td>
                         <td>{{ doc.created_at.strftime('%b %d, %Y') if doc.created_at else 'N/A' }}</td>
                         <td>
                             <span class="status-badge 
@@ -443,13 +567,23 @@
                                     <i class="fas fa-file-alt"></i> View File
                                 </button>
                             {% else %}
-                                <span class="no-file">No file</span>
+                                <span class="no-file"><i class="fas fa-minus-circle"></i> No file</span>
                             {% endif %}
                         </td>
                         <td style="text-align:center;">
-                            <button class="btn-action btn-view-details" onclick="viewDetails('{{ doc.id }}')">
-                                <i class="fas fa-eye"></i> View
-                            </button>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-view" onclick="viewDetails('{{ doc.id }}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                {% if doc.status == 'pending' %}
+                                    <button class="btn-action btn-approve" onclick="openApproveModal('{{ doc.id }}', '{{ doc.reference_number }}', '{{ doc.first_name }} {{ doc.last_name }}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn-action btn-reject" onclick="openRejectModal('{{ doc.id }}', '{{ doc.reference_number }}', '{{ doc.first_name }} {{ doc.last_name }}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -457,9 +591,9 @@
             </table>
             {% if documents|length == 0 %}
             <div class="empty-state">
-                <i class="fas fa-file-alt"></i>
-                <h4>No Documents Found</h4>
-                <p>No document applications have been submitted yet.</p>
+                <i class="fas fa-home"></i>
+                <h4>No Proof of Residency Requests</h4>
+                <p>No residency applications have been submitted yet.</p>
             </div>
             {% endif %}
         </div>
@@ -496,7 +630,107 @@
     </div>
 </div>
 
+<!-- ===== APPROVE MODAL ===== -->
+<div id="approveModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-check-circle" style="color:#22c55e;"></i> Approve Document</h3>
+            <button class="modal-close" onclick="closeApproveModal()">&times;</button>
+        </div>
+        
+        <div id="approveStep1">
+            <p style="color:#5a6e7a; font-size:14px; margin-bottom:16px;">
+                Are you sure you want to <strong>approve</strong> the document request of <strong id="approveName"></strong>?
+            </p>
+            <div class="form-group">
+                <label><i class="fas fa-comment"></i> Remarks (Optional)</label>
+                <textarea id="approveRemarks" placeholder="Enter remarks..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeApproveModal()">Cancel</button>
+                <button class="modal-btn approve" onclick="showApproveConfirm()">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+            </div>
+        </div>
+
+        <div id="approveStep2" style="display:none;">
+            <div style="text-align:center; padding:20px 0;">
+                <i class="fas fa-check-circle" style="font-size:56px; color:#22c55e; margin-bottom:16px;"></i>
+                <h4 style="color:#0d2b1e; margin-bottom:8px;">Confirm Approval</h4>
+                <p style="color:#5a6e7a; font-size:14px;">
+                    Are you sure you want to approve this document? This action cannot be undone.
+                </p>
+                <p style="color:#8a9a8f; font-size:12px; margin-top:8px;">
+                    <i class="fas fa-envelope"></i> An email notification will be sent to the applicant.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="backToApproveStep1()">Go Back</button>
+                <button class="modal-btn approve" onclick="confirmApprove()">
+                    <i class="fas fa-check"></i> Yes, Approve
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== REJECT MODAL ===== -->
+<div id="rejectModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-times-circle" style="color:#dc3545;"></i> Reject Document</h3>
+            <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+        </div>
+        
+        <div id="rejectStep1">
+            <p style="color:#5a6e7a; font-size:14px; margin-bottom:16px;">
+                Are you sure you want to <strong>reject</strong> the document request of <strong id="rejectName"></strong>?
+            </p>
+            <div class="form-group">
+                <label><i class="fas fa-comment"></i> Reason for Rejection <span style="color:#dc3545;">*</span></label>
+                <textarea id="rejectRemarks" placeholder="Enter reason for rejection... (This will be emailed to the resident)" required></textarea>
+                <small style="color: #6b7a72; font-size: 11px; margin-top: 4px; display: block;">
+                    <i class="fas fa-envelope"></i> This reason will be sent to the applicant via email.
+                </small>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeRejectModal()">Cancel</button>
+                <button class="modal-btn reject" onclick="showRejectConfirm()">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+            </div>
+        </div>
+
+        <div id="rejectStep2" style="display:none;">
+            <div style="text-align:center; padding:20px 0;">
+                <i class="fas fa-exclamation-triangle" style="font-size:56px; color:#dc3545; margin-bottom:16px;"></i>
+                <h4 style="color:#0d2b1e; margin-bottom:8px;">Confirm Rejection</h4>
+                <p style="color:#5a6e7a; font-size:14px;">
+                    Are you sure you want to reject this document?
+                </p>
+                <div style="background:#fff5f5; border:1px solid #fecaca; border-radius:10px; padding:12px; margin-top:12px; text-align:left;">
+                    <p style="font-size:12px; color:#991b1b; margin:0;">
+                        <strong>Reason:</strong> <span id="rejectReasonPreview"></span>
+                    </p>
+                </div>
+                <p style="color:#8a9a8f; font-size:12px; margin-top:12px;">
+                    <i class="fas fa-envelope"></i> This reason will be sent to the applicant via email.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="backToRejectStep1()">Go Back</button>
+                <button class="modal-btn reject" onclick="confirmReject()">
+                    <i class="fas fa-times"></i> Yes, Reject
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    let currentDocId = null;
+
     // ===== PROFILE DROPDOWN =====
     function toggleProfile() {
         document.getElementById('profileDropdown').classList.toggle('open');
@@ -578,12 +812,6 @@
         fetch(`/admin/document/${docId}/details`)
             .then(response => response.json())
             .then(doc => {
-                const docTypeMap = {
-                    'clearance': 'Barangay Clearance',
-                    'indigency': 'Certificate of Indigency',
-                    'proof_residency': 'Proof of Residency'
-                };
-                
                 let statusClass = 'status-pending';
                 if (doc.status === 'approved') statusClass = 'status-approved';
                 else if (doc.status === 'rejected') statusClass = 'status-rejected';
@@ -597,14 +825,6 @@
                         <div class="view-item">
                             <span class="label">Status</span>
                             <span class="value"><span class="status-badge ${statusClass}">${String(doc.status || 'PENDING').toUpperCase()}</span></span>
-                        </div>
-                        <div class="view-item">
-                            <span class="label">Document Type</span>
-                            <span class="value">${String(docTypeMap[doc.document_type] || doc.document_type || 'N/A')}</span>
-                        </div>
-                        <div class="view-item">
-                            <span class="label">Date Submitted</span>
-                            <span class="value">${String(doc.created_at_formatted || doc.created_at || 'N/A')}</span>
                         </div>
                         <div class="view-item">
                             <span class="label">Applicant Name</span>
@@ -634,6 +854,18 @@
                             <span class="label">Place of Birth</span>
                             <span class="value">${String(doc.place_of_birth || 'N/A')}</span>
                         </div>
+                        <div class="view-item">
+                            <span class="label">Length of Stay</span>
+                            <span class="value">${String(doc.length_of_stay || 'N/A')}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Residency Type</span>
+                            <span class="value">${String(doc.residency_type || 'N/A')}</span>
+                        </div>
+                        <div class="view-item">
+                            <span class="label">Date Submitted</span>
+                            <span class="value">${String(doc.created_at_formatted || doc.created_at || 'N/A')}</span>
+                        </div>
                         <div class="view-item full-width">
                             <span class="label">Purpose</span>
                             <span class="value">${String(doc.purpose || 'N/A')}</span>
@@ -654,6 +886,173 @@
 
     function closeDetailsModal() {
         document.getElementById('detailsModal').classList.remove('active');
+    }
+
+    // ===== APPROVE MODAL =====
+    function openApproveModal(docId, refNum, name) {
+        currentDocId = docId;
+        document.getElementById('approveName').textContent = name + ' (' + refNum + ')';
+        document.getElementById('approveRemarks').value = '';
+        document.getElementById('approveStep1').style.display = 'block';
+        document.getElementById('approveStep2').style.display = 'none';
+        document.getElementById('approveModal').classList.add('active');
+    }
+
+    function closeApproveModal() {
+        document.getElementById('approveModal').classList.remove('active');
+        currentDocId = null;
+    }
+
+    function showApproveConfirm() {
+        document.getElementById('approveStep1').style.display = 'none';
+        document.getElementById('approveStep2').style.display = 'block';
+    }
+
+    function backToApproveStep1() {
+        document.getElementById('approveStep1').style.display = 'block';
+        document.getElementById('approveStep2').style.display = 'none';
+    }
+
+    function confirmApprove() {
+        if (!currentDocId) return;
+        
+        const remarks = document.getElementById('approveRemarks').value.trim();
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        fetch(`/api/document/${currentDocId}/update-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved', remarks: remarks })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeApproveModal();
+                showToast('Document approved successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Error approving document', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve';
+            }
+        })
+        .catch(error => {
+            showToast('Error approving document', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve';
+        });
+    }
+
+    // ===== REJECT MODAL =====
+    function openRejectModal(docId, refNum, name) {
+        currentDocId = docId;
+        document.getElementById('rejectName').textContent = name + ' (' + refNum + ')';
+        document.getElementById('rejectRemarks').value = '';
+        document.getElementById('rejectStep1').style.display = 'block';
+        document.getElementById('rejectStep2').style.display = 'none';
+        document.getElementById('rejectModal').classList.add('active');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.remove('active');
+        currentDocId = null;
+    }
+
+    function showRejectConfirm() {
+        const remarks = document.getElementById('rejectRemarks').value.trim();
+        
+        if (!remarks) {
+            showToast('Please enter a reason for rejection.', 'error');
+            document.getElementById('rejectRemarks').focus();
+            return;
+        }
+        
+        document.getElementById('rejectReasonPreview').textContent = remarks;
+        document.getElementById('rejectStep1').style.display = 'none';
+        document.getElementById('rejectStep2').style.display = 'block';
+    }
+
+    function backToRejectStep1() {
+        document.getElementById('rejectStep1').style.display = 'block';
+        document.getElementById('rejectStep2').style.display = 'none';
+    }
+
+    function confirmReject() {
+        if (!currentDocId) return;
+        
+        const remarks = document.getElementById('rejectRemarks').value.trim();
+        
+        if (!remarks) {
+            showToast('Please enter a reason for rejection.', 'error');
+            return;
+        }
+        
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        fetch(`/api/document/${currentDocId}/update-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'rejected', remarks: remarks })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeRejectModal();
+                showToast('Document rejected. The reason has been sent to the applicant via email.', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Error rejecting document', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-times"></i> Yes, Reject';
+            }
+        })
+        .catch(error => {
+            showToast('Error rejecting document', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-times"></i> Yes, Reject';
+        });
+    }
+
+    // ===== TOAST NOTIFICATION =====
+    function showToast(message, type = 'success') {
+        const existingToast = document.getElementById('customToast');
+        if (existingToast) existingToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.id = 'customToast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: ${type === 'success' ? '#22c55e' : '#dc3545'};
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+        `;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 
     // ===== CLOSE MODAL ON OUTSIDE CLICK =====

@@ -24,6 +24,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral-50); min-height: 100vh; }
 
+        /* ===== PAGE TRANSITION (FADE IN/OUT) ===== */
+        body {
+            animation: fadeInPage 0.4s ease-in;
+        }
+        @keyframes fadeInPage {
+            from { 
+                opacity: 0; 
+                transform: translateY(8px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        body.fade-out {
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
         /* ===== SIDEBAR ===== */
         .sidebar {
             width: 260px; height: 100vh; background: linear-gradient(180deg, var(--primary-800), var(--primary-600));
@@ -508,20 +528,20 @@
             .user-menu { right: -10px; }
         }
         /* ===== BADGE NOTIFICATION ===== */
-.badge-notification {
-    background: #dc3545;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+        .badge-notification {
+            background: #dc3545;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -1022,6 +1042,23 @@
             document.getElementById('signatureDate').value = today;
         });
 
+        // ===== SMOOTH PAGE TRANSITION (SIDEBAR LINKS) =====
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip kung naka-active na (same page) o walang href
+                if (this.classList.contains('active') || !href || href === '#') return;
+                
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
+        });
+
         // ===== USER MENU DROPDOWN =====
         function toggleUserMenu(event) {
             if (event) event.stopPropagation();
@@ -1064,6 +1101,7 @@
                 'Apply for Permit': 'Apply for Permit',
                 'My Requests': 'My Requests',
                 'Events Calendar': 'Events Calendar',
+                'Announcements': 'Announcements',
                 'Settings': 'Settings',
                 'Logout': 'Logout',
                 'Submit a request for barangay documents': 'Submit a request for barangay documents',
@@ -1075,6 +1113,7 @@
                 'Apply for Permit': 'Mag-apply ng Permit',
                 'My Requests': 'Aking mga Request',
                 'Events Calendar': 'Kalendaryo ng mga Kaganapan',
+                'Announcements': 'Mga Anunsyo',
                 'Settings': 'Settings',
                 'Logout': 'Mag-logout',
                 'Submit a request for barangay documents': 'Mag-sumite ng request para sa mga dokumento ng barangay',
